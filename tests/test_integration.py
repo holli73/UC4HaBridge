@@ -137,3 +137,25 @@ async def test_turn_on_room_with_both(hass, config_entry, mock_client) -> None:
         "climate", "turn_on", {"entity_id": "climate.uc4_speis"}, blocking=True
     )
     mock_client.put_var_col.assert_awaited_once_with(DEFAULT_VARA_WEEKDAY, "Speis", 3, "2", TRIGGER)
+
+
+async def test_remove_device_only_when_room_is_gone(hass, config_entry, mock_client) -> None:
+    from homeassistant.helpers import device_registry as dr
+    from custom_components.automic_heating import async_remove_config_entry_device
+
+    await _setup(hass, config_entry)
+    registry = dr.async_get(hass)
+    device = registry.async_get_device({("automic_heating", f"{config_entry.unique_id}|ClaudeRoomTest")})
+    assert device is not None
+    assert not await async_remove_config_entry_device(hass, config_entry, device)
+
+    # Room removed from the settings VARA in Automic.
+    weekday = load_vara(DEFAULT_VARA_WEEKDAY)
+    rows = {k: v for k, v in weekday.rows.items() if k != "ClaudeRoomTest"}
+    reduced = Vara(weekday.name, weekday.columns, rows)
+    mock_client.get_vara.side_effect = (
+        lambda name: reduced if name == DEFAULT_VARA_WEEKDAY else load_vara(name)
+    )
+    await config_entry.runtime_data.async_refresh()
+    assert hass.states.get(CLIMATE).state == "unavailable"
+    assert await async_remove_config_entry_device(hass, config_entry, device)

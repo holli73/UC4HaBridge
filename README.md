@@ -50,6 +50,7 @@ Settings → Devices & services → **Automic Heating**:
 | **Configure** (gear) | Poll interval and trigger object (checked to exist; empty = no trigger). The integration reloads by itself after saving. |
 | ⋮ → **Reconfigure** | REST URL, client, user, VARA names. The password is only needed if URL, client or user change; a new API token is then created. If you leave it empty, the current token is kept. |
 | ⋮ → **Re-authenticate** | Shown automatically if the token is rejected. |
+| Device → ⋮ → **Delete** | Only for rooms that no longer exist in the Mon-Fri settings VARA (their entities show as unavailable). |
 
 Requires Home Assistant 2025.8 or newer.
 

@@ -6,10 +6,11 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_URL, CONF_USERNAME, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.event import async_track_time_interval
 
 from .api import AutomicClient
-from .const import CONF_CLIENT, CONF_TOKEN, TOKEN_CHECK_INTERVAL
+from .const import CONF_CLIENT, CONF_TOKEN, DOMAIN, TOKEN_CHECK_INTERVAL
 from .coordinator import AutomicHeatingCoordinator
 
 PLATFORMS = [Platform.CLIMATE, Platform.NUMBER, Platform.SELECT]
@@ -41,3 +42,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: AutomicConfigEntry) -> b
 
 async def async_unload_entry(hass: HomeAssistant, entry: AutomicConfigEntry) -> bool:
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+
+
+async def async_remove_config_entry_device(
+    hass: HomeAssistant, entry: AutomicConfigEntry, device: DeviceEntry
+) -> bool:
+    """Allow deleting a room device only if the room is gone from the settings VARA."""
+    rooms = set(entry.runtime_data.data.rooms)
+    return not any(
+        domain == DOMAIN and identifier.rsplit("|", 1)[-1] in rooms
+        for domain, identifier in device.identifiers
+    )
