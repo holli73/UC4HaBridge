@@ -44,9 +44,9 @@ def load_vara(name: str) -> Vara:
 def config_entry() -> MockConfigEntry:
     return MockConfigEntry(
         domain=DOMAIN,
-        unique_id="http://uc4|1|summary",
+        unique_id="http://automic.example:8088|1|summary",
         data={
-            "url": "http://uc4.holli.at:8877",
+            "url": "http://automic.example:8088",
             CONF_CLIENT: 1,
             "username": "HA/HEATING",
             CONF_VARA_SUMMARY: DEFAULT_VARA_SUMMARY,

@@ -38,7 +38,7 @@ Rooms are the keys of the Mon-Fri settings VARA.
 
 1. Copy `custom_components/automic_heating` into `<ha-config>/custom_components/` (or add this repo to HACS as a custom repository).
 2. Restart HA → *Settings → Devices & services → Add integration → Automic Heating*.
-3. Enter URL `http://uc4.holli.at:8877`, client `1`, user `HA/HEATING` and the password. The VARA names are filled in by default.
+3. Replace `<AutomicRestEndpoint>` with your REST URL (e.g. `http://automic-host:8088`), then enter client, user (`USER/DEPARTMENT`) and password. The VARA names are filled in by default.
 
 ## Development
 
@@ -47,6 +47,6 @@ python3 -m venv .venv && .venv/bin/pip install uv
 # override pins lru-dict to a prebuilt wheel (1.3.0 does not compile with older Xcode clang)
 echo "lru-dict==1.4.1" > /tmp/overrides.txt
 .venv/bin/uv pip install --python .venv/bin/python --override /tmp/overrides.txt pytest-homeassistant-custom-component
-AE_PASSWORD=... .venv/bin/python tools/live_test.py   # live API test, touches only ClaudeRoomTest
+AE_URL=http://<host>:<port> AE_PASSWORD=... .venv/bin/python tools/live_test.py   # live API test, touches only ClaudeRoomTest
 .venv/bin/pytest tests                               # HA tests, Automic mocked
 ```

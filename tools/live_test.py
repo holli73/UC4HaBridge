@@ -4,7 +4,7 @@
 Only writes to the test row (default ClaudeRoomTest) and restores its values.
 All tokens it creates are deleted again.
 
-    AE_PASSWORD=... .venv/bin/python tools/live_test.py
+    AE_URL=http://<host>:<port> AE_PASSWORD=... .venv/bin/python tools/live_test.py
 """
 
 import asyncio
@@ -23,7 +23,7 @@ pkg.__path__ = [str(PKG)]
 sys.modules["ah"] = pkg
 from ah.api import AutomicClient, format_number  # noqa: E402
 
-URL = os.environ.get("AE_URL", "http://uc4.holli.at:8877")
+URL = os.environ["AE_URL"]
 CLIENT = int(os.environ.get("AE_CLIENT", "1"))
 USER = os.environ.get("AE_USER", "HA/HEATING")
 PASSWORD = os.environ["AE_PASSWORD"]
