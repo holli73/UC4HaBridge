@@ -197,7 +197,7 @@ def build_write_script(
         if not _SAFE_NAME.match(trigger):
             raise ValueError(f"Unsafe trigger object name: {trigger!r}")
         lines += [
-            f":SET &HA_RUNID# = ACTIVATE_UC_OBJECT({trigger})",
+            f":SET &HA_RUNID# = ACTIVATE_UC_OBJECT({trigger}, WAIT)",
             ":IF &HA_RUNID# = 0",
             f':  STOP MSG, 50, "HA bridge: activation of {trigger} failed"',
             ":ENDIF",

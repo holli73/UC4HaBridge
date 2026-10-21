@@ -140,6 +140,6 @@ async def test_options_trigger_empty(hass, config_entry, mock_client) -> None:
 def test_write_script() -> None:
     assert build_write_script("V", "Bad", 1, "22") == ':PUT_VAR_COL V, "Bad", 1, "22"'
     script = build_write_script("V", "Bad", 3, "2", "HEATING.JOBP")
-    assert script.splitlines()[1] == ":SET &HA_RUNID# = ACTIVATE_UC_OBJECT(HEATING.JOBP)"
+    assert script.splitlines()[1] == ":SET &HA_RUNID# = ACTIVATE_UC_OBJECT(HEATING.JOBP, WAIT)"
     with pytest.raises(ValueError):
         build_write_script("V", "Bad", 1, "22", "X)\n:PUT_VAR Y")
