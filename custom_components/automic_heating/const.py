@@ -3,6 +3,7 @@
 from datetime import timedelta
 
 DOMAIN = "automic_heating"
+ENTITY_ID_PREFIX = "uc4"
 
 CONF_CLIENT = "client"
 CONF_TOKEN = "token"

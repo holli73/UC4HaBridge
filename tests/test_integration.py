@@ -17,7 +17,7 @@ from custom_components.automic_heating.models import Vara
 
 from .conftest import load_vara
 
-CLIMATE = "climate.clauderoomtest"
+CLIMATE = "climate.uc4_clauderoomtest"
 
 
 async def _setup(hass, config_entry):
@@ -37,9 +37,10 @@ async def test_climate_weekday(hass: HomeAssistant, config_entry, mock_client) -
     assert state.attributes["hvac_action"] == HVACAction.IDLE  # infra/floor Off
     assert state.attributes["must_temperature"] == 22.0  # "00000000022.0000..."
     assert state.attributes["active_schedule"] == "weekday"
+    assert state.attributes["friendly_name"] == "ClaudeRoomTest"  # display name unchanged
     # Only rooms from the settings VARA, no sensor-only rows.
-    assert hass.states.get("climate.boiler") is None
-    assert hass.states.get("climate.bad") is not None
+    assert hass.states.get("climate.uc4_boiler") is None
+    assert hass.states.get("climate.uc4_bad") is not None
 
 
 @pytest.mark.freeze_time("2026-10-21 10:00:00+00:00")
@@ -76,17 +77,17 @@ async def test_hvac_and_preset(hass, config_entry, mock_client) -> None:
 @pytest.mark.freeze_time("2026-10-21 10:00:00+00:00")
 async def test_number_and_select(hass, config_entry, mock_client) -> None:
     await _setup(hass, config_entry)
-    assert hass.states.get("number.clauderoomtest_sat_sun_night_temperature").state == "20.0"
-    assert hass.states.get("select.clauderoomtest_mon_fri_heating_mode").state == "manual"
+    assert hass.states.get("number.uc4_clauderoomtest_sat_sun_night_temperature").state == "20.0"
+    assert hass.states.get("select.uc4_clauderoomtest_mon_fri_heating_mode").state == "manual"
     await hass.services.async_call(
         "number", "set_value",
-        {"entity_id": "number.clauderoomtest_sat_sun_night_temperature", "value": 18},
+        {"entity_id": "number.uc4_clauderoomtest_sat_sun_night_temperature", "value": 18},
         blocking=True,
     )
     mock_client.put_var_col.assert_awaited_with(DEFAULT_VARA_WEEKEND, "ClaudeRoomTest", 2, "18")
     await hass.services.async_call(
         "select", "select_option",
-        {"entity_id": "select.clauderoomtest_mon_fri_heating_mode", "option": "floor"},
+        {"entity_id": "select.uc4_clauderoomtest_mon_fri_heating_mode", "option": "floor"},
         blocking=True,
     )
     mock_client.put_var_col.assert_awaited_with(DEFAULT_VARA_WEEKDAY, "ClaudeRoomTest", 3, "2")

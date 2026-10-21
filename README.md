@@ -30,9 +30,9 @@ Rooms are the keys of the Mon-Fri settings VARA.
 
 | Entity | Maps to |
 |---|---|
-| `climate.<room>` | current = SUMMARY `_actTemp`; target ↔ `_Day` of **today's** VARA (Mon-Fri → weekday, Sat/Sun → weekend); off/heat + presets infra/floor/both/manual ↔ `_Mode`. Attributes: must temp, night temp, infra/floor state, active schedule. |
-| `number.<room>_mon_fri_day_temperature` … (4×) | `_Day` / `_Night` of each VARA |
-| `select.<room>_mon_fri_heating_mode` (2×) | `_Mode` of each VARA |
+| `climate.uc4_<room>` | current = SUMMARY `_actTemp`; target ↔ `_Day` of **today's** VARA (Mon-Fri → weekday, Sat/Sun → weekend); off/heat + presets infra/floor/both/manual ↔ `_Mode`. Attributes: must temp, night temp, infra/floor state, active schedule. |
+| `number.uc4_<room>_mon_fri_day_temperature` … (4×) | `_Day` / `_Night` of each VARA |
+| `select.uc4_<room>_mon_fri_heating_mode` (2×) | `_Mode` of each VARA |
 
 ## Install
 

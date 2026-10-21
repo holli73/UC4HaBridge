@@ -27,12 +27,14 @@ async def async_setup_entry(
 
 
 class AutomicModeSelect(AutomicRoomEntity, SelectEntity):
+    _entity_domain = "select"
     _attr_options = list(MODES.values())
     _attr_entity_category = EntityCategory.CONFIG
 
     def __init__(self, coordinator: AutomicHeatingCoordinator, room: str, schedule: str) -> None:
         key = f"{schedule}_mode"
-        super().__init__(coordinator, room, key)
+        days = "mon_fri" if schedule == SCHEDULE_WEEKDAY else "sat_sun"
+        super().__init__(coordinator, room, key, f"{days}_heating_mode")
         self._attr_translation_key = key
         self._schedule = schedule
 

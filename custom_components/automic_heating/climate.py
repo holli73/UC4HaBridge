@@ -56,6 +56,7 @@ async def async_setup_entry(
 
 
 class AutomicRoomClimate(AutomicRoomEntity, ClimateEntity):
+    _entity_domain = "climate"
     _attr_name = None
     _attr_translation_key = "room"
     _attr_temperature_unit = UnitOfTemperature.CELSIUS

@@ -28,6 +28,7 @@ async def async_setup_entry(
 
 
 class AutomicTemperatureNumber(AutomicRoomEntity, NumberEntity):
+    _entity_domain = "number"
     _attr_device_class = NumberDeviceClass.TEMPERATURE
     _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
     _attr_native_min_value = MIN_TEMP
@@ -40,7 +41,8 @@ class AutomicTemperatureNumber(AutomicRoomEntity, NumberEntity):
         self, coordinator: AutomicHeatingCoordinator, room: str, schedule: str, column: str
     ) -> None:
         key = f"{schedule}_{column.lower()}"
-        super().__init__(coordinator, room, key)
+        days = "mon_fri" if schedule == SCHEDULE_WEEKDAY else "sat_sun"
+        super().__init__(coordinator, room, key, f"{days}_{column.lower()}_temperature")
         self._attr_translation_key = key
         self._schedule = schedule
         self._column = column
