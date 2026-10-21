@@ -30,7 +30,7 @@ Rooms are the keys of the Mon-Fri settings VARA.
 
 | Entity | Maps to |
 |---|---|
-| `climate.<room>_thermostat` | current = SUMMARY `_actTemp`; target ↔ `_Day` of **today's** VARA (Mon-Fri → weekday, Sat/Sun → weekend); off/heat + presets infra/floor/both/manual ↔ `_Mode`. Attributes: must temp, night temp, infra/floor state, active schedule. |
+| `climate.<room>` | current = SUMMARY `_actTemp`; target ↔ `_Day` of **today's** VARA (Mon-Fri → weekday, Sat/Sun → weekend); off/heat + presets infra/floor/both/manual ↔ `_Mode`. Attributes: must temp, night temp, infra/floor state, active schedule. |
 | `number.<room>_mon_fri_day_temperature` … (4×) | `_Day` / `_Night` of each VARA |
 | `select.<room>_mon_fri_heating_mode` (2×) | `_Mode` of each VARA |
 
@@ -43,7 +43,10 @@ Rooms are the keys of the Mon-Fri settings VARA.
 ## Development
 
 ```sh
-python3 -m venv .venv && .venv/bin/pip install homeassistant pytest-homeassistant-custom-component
+python3 -m venv .venv && .venv/bin/pip install uv
+# override pins lru-dict to a prebuilt wheel (1.3.0 does not compile with older Xcode clang)
+echo "lru-dict==1.4.1" > /tmp/overrides.txt
+.venv/bin/uv pip install --python .venv/bin/python --override /tmp/overrides.txt pytest-homeassistant-custom-component
 AE_PASSWORD=... .venv/bin/python tools/live_test.py   # live API test, touches only ClaudeRoomTest
 .venv/bin/pytest tests                               # HA tests, Automic mocked
 ```

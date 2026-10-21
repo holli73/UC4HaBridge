@@ -3,7 +3,6 @@
 from datetime import timedelta
 
 import pytest
-from freezegun.api import FrozenDateTimeFactory
 from pytest_homeassistant_custom_component.common import async_fire_time_changed
 
 from homeassistant.components.climate import HVACAction, HVACMode
@@ -18,7 +17,7 @@ from custom_components.automic_heating.models import Vara
 
 from .conftest import load_vara
 
-CLIMATE = "climate.clauderoomtest_thermostat"
+CLIMATE = "climate.clauderoomtest"
 
 
 async def _setup(hass, config_entry):
@@ -39,8 +38,8 @@ async def test_climate_weekday(hass: HomeAssistant, config_entry, mock_client) -
     assert state.attributes["must_temperature"] == 22.0  # "00000000022.0000..."
     assert state.attributes["active_schedule"] == "weekday"
     # Only rooms from the settings VARA, no sensor-only rows.
-    assert hass.states.get("climate.boiler_thermostat") is None
-    assert hass.states.get("climate.bad_thermostat") is not None
+    assert hass.states.get("climate.boiler") is None
+    assert hass.states.get("climate.bad") is not None
 
 
 @pytest.mark.freeze_time("2026-10-21 10:00:00+00:00")
@@ -94,17 +93,17 @@ async def test_number_and_select(hass, config_entry, mock_client) -> None:
 
 
 @pytest.mark.freeze_time("2026-10-21 10:00:00+00:00")
-async def test_change_in_automic_reaches_ha(
-    hass, config_entry, mock_client, freezer: FrozenDateTimeFactory
-) -> None:
+async def test_change_in_automic_reaches_ha(hass, config_entry, mock_client) -> None:
+    """A value changed in Automic shows up in HA on the next scheduled poll."""
     await _setup(hass, config_entry)
     changed = load_vara(DEFAULT_VARA_WEEKDAY)
     rows = dict(changed.rows)
     rows["ClaudeRoomTest"] = ("19.5",) + rows["ClaudeRoomTest"][1:]
     changed = Vara(changed.name, changed.columns, rows)
-    mock_client.get_vara.side_effect = lambda name: changed if name == DEFAULT_VARA_WEEKDAY else load_vara(name)
+    mock_client.get_vara.side_effect = (
+        lambda name: changed if name == DEFAULT_VARA_WEEKDAY else load_vara(name)
+    )
 
-    freezer.tick(timedelta(seconds=16))
-    async_fire_time_changed(hass, dt_util.utcnow())
-    await hass.async_block_till_done()
+    async_fire_time_changed(hass, dt_util.utcnow() + timedelta(seconds=16))
+    await hass.async_block_till_done(wait_background_tasks=True)
     assert hass.states.get(CLIMATE).attributes["temperature"] == 19.5
