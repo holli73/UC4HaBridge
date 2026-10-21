@@ -43,7 +43,7 @@ from .coordinator import AutomicHeatingCoordinator
 from .entity import AutomicRoomEntity
 
 PRESETS = [name for mode_id, name in MODES.items() if mode_id != 0]
-DEFAULT_ON_MODE = MODE_IDS["floor"]
+NO_HEATING = "noheating"  # SUMMARY value for a heating type the room does not have
 
 
 async def async_setup_entry(
@@ -64,7 +64,6 @@ class AutomicRoomClimate(AutomicRoomEntity, ClimateEntity):
     _attr_min_temp = MIN_TEMP
     _attr_max_temp = MAX_TEMP
     _attr_hvac_modes = [HVACMode.OFF, HVACMode.HEAT]
-    _attr_preset_modes = PRESETS
     _attr_supported_features = (
         ClimateEntityFeature.TARGET_TEMPERATURE
         | ClimateEntityFeature.PRESET_MODE
@@ -93,6 +92,23 @@ class AutomicRoomClimate(AutomicRoomEntity, ClimateEntity):
     @property
     def _mode(self) -> int | None:
         return self.coordinator.settings(self._schedule).integer(self.room, COL_MODE)
+
+    def _has(self, column: str) -> bool:
+        """False only if SUMMARY explicitly says the room has no such heating."""
+        value = self.coordinator.data.summary.raw(self.room, column) or ""
+        return value.lower() != NO_HEATING
+
+    def _mode_supported(self, mode: int) -> bool:
+        infra, floor = self._has(COL_INFRA), self._has(COL_FLOOR)
+        return {MODE_IDS["infra"]: infra, MODE_IDS["floor"]: floor, MODE_IDS["both"]: infra and floor}.get(
+            mode, True
+        )
+
+    @property
+    def preset_modes(self) -> list[str]:
+        """Only heating types the room actually has (plus the current one)."""
+        current = self.preset_mode
+        return [p for p in PRESETS if self._mode_supported(MODE_IDS[p]) or p == current]
 
     @property
     def current_temperature(self) -> float | None:
@@ -155,10 +171,20 @@ class AutomicRoomClimate(AutomicRoomEntity, ClimateEntity):
         elif self._mode:
             return  # already heating
         else:
-            # Re-use the other schedule's mode if it heats, else floor heating.
-            other = SCHEDULE_WEEKEND if self._schedule == SCHEDULE_WEEKDAY else SCHEDULE_WEEKDAY
-            mode = self.coordinator.settings(other).integer(self.room, COL_MODE) or DEFAULT_ON_MODE
+            mode = self._turn_on_mode()
         await self.coordinator.async_write(self._schedule, self.room, COL_MODE, mode)
+
+    def _turn_on_mode(self) -> int:
+        """Re-use the other schedule's mode if the room supports it, else the
+        heating the room has: floor, then infra, then manual."""
+        other = SCHEDULE_WEEKEND if self._schedule == SCHEDULE_WEEKDAY else SCHEDULE_WEEKDAY
+        other_mode = self.coordinator.settings(other).integer(self.room, COL_MODE)
+        if other_mode and self._mode_supported(other_mode):
+            return other_mode
+        for name in ("floor", "infra"):
+            if self._mode_supported(MODE_IDS[name]):
+                return MODE_IDS[name]
+        return MODE_IDS["manual"]
 
     async def async_turn_on(self) -> None:
         await self.async_set_hvac_mode(HVACMode.HEAT)

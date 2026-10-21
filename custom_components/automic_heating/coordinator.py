@@ -29,6 +29,7 @@ from .const import (
     CONF_VARA_WEEKDAY,
     CONF_VARA_WEEKEND,
     DEFAULT_SCAN_INTERVAL,
+    DEFAULT_TRIGGER_OBJECT,
     DOMAIN,
     SCHEDULE_WEEKDAY,
     SCHEDULE_WEEKEND,
@@ -81,9 +82,15 @@ class AutomicHeatingCoordinator(DataUpdateCoordinator[HeatingData]):
 
     @property
     def trigger_object(self) -> str | None:
-        """Object activated after every write (options override setup data)."""
+        """Object activated after every write (options override setup data).
+
+        Never configured -> default object; explicitly cleared ("") -> none.
+        """
         entry = self.config_entry
-        return entry.options.get(CONF_TRIGGER_OBJECT, entry.data.get(CONF_TRIGGER_OBJECT)) or None
+        value = entry.options.get(
+            CONF_TRIGGER_OBJECT, entry.data.get(CONF_TRIGGER_OBJECT, DEFAULT_TRIGGER_OBJECT)
+        )
+        return value or None
 
     # ---- schedule helpers ------------------------------------------------
 

@@ -10,6 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.util import dt as dt_util
 
 from custom_components.automic_heating.const import (
+    DEFAULT_TRIGGER_OBJECT as TRIGGER,
     DEFAULT_VARA_WEEKDAY,
     DEFAULT_VARA_WEEKEND,
 )
@@ -49,7 +50,7 @@ async def test_set_temperature_weekday(hass, config_entry, mock_client) -> None:
     await hass.services.async_call(
         "climate", "set_temperature", {"entity_id": CLIMATE, "temperature": 21.5}, blocking=True
     )
-    mock_client.put_var_col.assert_awaited_once_with(DEFAULT_VARA_WEEKDAY, "ClaudeRoomTest", 1, "21.5", None)
+    mock_client.put_var_col.assert_awaited_once_with(DEFAULT_VARA_WEEKDAY, "ClaudeRoomTest", 1, "21.5", TRIGGER)
 
 
 @pytest.mark.freeze_time("2026-10-24 10:00:00+00:00")  # Saturday
@@ -58,7 +59,7 @@ async def test_set_temperature_weekend(hass, config_entry, mock_client) -> None:
     await hass.services.async_call(
         "climate", "set_temperature", {"entity_id": CLIMATE, "temperature": 23}, blocking=True
     )
-    mock_client.put_var_col.assert_awaited_once_with(DEFAULT_VARA_WEEKEND, "ClaudeRoomTest", 1, "23", None)
+    mock_client.put_var_col.assert_awaited_once_with(DEFAULT_VARA_WEEKEND, "ClaudeRoomTest", 1, "23", TRIGGER)
 
 
 @pytest.mark.freeze_time("2026-10-21 10:00:00+00:00")
@@ -67,11 +68,11 @@ async def test_hvac_and_preset(hass, config_entry, mock_client) -> None:
     await hass.services.async_call(
         "climate", "set_hvac_mode", {"entity_id": CLIMATE, "hvac_mode": "off"}, blocking=True
     )
-    mock_client.put_var_col.assert_awaited_with(DEFAULT_VARA_WEEKDAY, "ClaudeRoomTest", 3, "0", None)
+    mock_client.put_var_col.assert_awaited_with(DEFAULT_VARA_WEEKDAY, "ClaudeRoomTest", 3, "0", TRIGGER)
     await hass.services.async_call(
         "climate", "set_preset_mode", {"entity_id": CLIMATE, "preset_mode": "both"}, blocking=True
     )
-    mock_client.put_var_col.assert_awaited_with(DEFAULT_VARA_WEEKDAY, "ClaudeRoomTest", 3, "3", None)
+    mock_client.put_var_col.assert_awaited_with(DEFAULT_VARA_WEEKDAY, "ClaudeRoomTest", 3, "3", TRIGGER)
 
 
 @pytest.mark.freeze_time("2026-10-21 10:00:00+00:00")
@@ -84,13 +85,13 @@ async def test_number_and_select(hass, config_entry, mock_client) -> None:
         {"entity_id": "number.uc4_clauderoomtest_sat_sun_night_temperature", "value": 18},
         blocking=True,
     )
-    mock_client.put_var_col.assert_awaited_with(DEFAULT_VARA_WEEKEND, "ClaudeRoomTest", 2, "18", None)
+    mock_client.put_var_col.assert_awaited_with(DEFAULT_VARA_WEEKEND, "ClaudeRoomTest", 2, "18", TRIGGER)
     await hass.services.async_call(
         "select", "select_option",
         {"entity_id": "select.uc4_clauderoomtest_mon_fri_heating_mode", "option": "floor"},
         blocking=True,
     )
-    mock_client.put_var_col.assert_awaited_with(DEFAULT_VARA_WEEKDAY, "ClaudeRoomTest", 3, "2", None)
+    mock_client.put_var_col.assert_awaited_with(DEFAULT_VARA_WEEKDAY, "ClaudeRoomTest", 3, "2", TRIGGER)
 
 
 @pytest.mark.freeze_time("2026-10-21 10:00:00+00:00")
@@ -108,3 +109,31 @@ async def test_change_in_automic_reaches_ha(hass, config_entry, mock_client) -> 
     async_fire_time_changed(hass, dt_util.utcnow() + timedelta(seconds=16))
     await hass.async_block_till_done(wait_background_tasks=True)
     assert hass.states.get(CLIMATE).attributes["temperature"] == 19.5
+
+
+@pytest.mark.freeze_time("2026-10-21 10:00:00+00:00")
+async def test_turn_on_room_without_floor_heating(hass, config_entry, mock_client) -> None:
+    """KellerLift: mode 0 on both schedules, SUMMARY _FloorHeating = NoHeating -> infra."""
+    await _setup(hass, config_entry)
+    state = hass.states.get("climate.uc4_kellerlift")
+    assert state.state == HVACMode.OFF
+    assert state.attributes["preset_modes"] == ["infra", "manual"]
+    await hass.services.async_call(
+        "climate", "turn_on", {"entity_id": "climate.uc4_kellerlift"}, blocking=True
+    )
+    mock_client.put_var_col.assert_awaited_once_with(
+        DEFAULT_VARA_WEEKDAY, "KellerLift", 3, "1", TRIGGER
+    )
+
+
+@pytest.mark.freeze_time("2026-10-21 10:00:00+00:00")
+async def test_turn_on_room_with_both(hass, config_entry, mock_client) -> None:
+    """Speis: weekday mode 0, weekend mode 0, no NoHeating marker -> floor."""
+    await _setup(hass, config_entry)
+    assert hass.states.get("climate.uc4_speis").attributes["preset_modes"] == [
+        "infra", "floor", "both", "manual"
+    ]
+    await hass.services.async_call(
+        "climate", "turn_on", {"entity_id": "climate.uc4_speis"}, blocking=True
+    )
+    mock_client.put_var_col.assert_awaited_once_with(DEFAULT_VARA_WEEKDAY, "Speis", 3, "2", TRIGGER)

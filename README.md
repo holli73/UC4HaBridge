@@ -10,7 +10,7 @@ change made in HA is written straight to Automic and then read back.
 |---|---|
 | Automic → HA | Polls `GET /ae/api/v1/{client}/objects/{vara}` for the 3 VARAs (default every 15 s). Entities update only when a value actually changed. |
 | HA → Automic | Inline script via `POST /ae/api/v1/{client}/scripts`: `:PUT_VAR_COL <VARA>, "<room>", <col>, "<value>"`. No helper objects in Automic. The run is awaited (status 1900) and the VARAs are re-read right away. |
-| Immediate processing | Optional **trigger object**: the same script then runs `:SET &HA_RUNID# = ACTIVATE_UC_OBJECT(<object>, WAIT)`, so Automic processes the change at once instead of at the next cycle. If the activation fails, the script stops with `:STOP MSG` and HA shows an error (the value is still written). |
+| Immediate processing | Optional **trigger object**: the same script then runs `:SET &HA_RUNID# = ACTIVATE_UC_OBJECT(<object>, WAIT)`, so Automic processes the change at once instead of at the next cycle. Default: `HEATING.SCRI.MAIN.INFRARED.FLOOR` (clear the field under Configure to disable). If the activation fails, the script stops with `:STOP MSG` and HA shows an error (the value is still written). |
 | Auth | The password is entered once in the config flow and used to create an API token (90 days). Only the token is stored. Every 6 h the integration checks the expiry; 14 days before it, the current token creates its successor and the old one is deleted. If the token is rejected, HA asks you to sign in again. |
 
 > AE 24.4 does not change any object counter or `modified_date` when `:PUT_VAR` writes, so change
@@ -31,7 +31,7 @@ Rooms are the keys of the Mon-Fri settings VARA.
 
 | Entity | Maps to |
 |---|---|
-| `climate.uc4_<room>` | current = SUMMARY `_actTemp`; target ↔ `_Day` of **today's** VARA (Mon-Fri → weekday, Sat/Sun → weekend); off/heat + presets infra/floor/both/manual ↔ `_Mode`. Attributes: must temp, night temp, infra/floor state, active schedule. |
+| `climate.uc4_<room>` | current = SUMMARY `_actTemp`; target ↔ `_Day` of **today's** VARA (Mon-Fri → weekday, Sat/Sun → weekend); off/heat + presets infra/floor/both/manual ↔ `_Mode`. Presets and *turn on* only offer heating types the room has (SUMMARY `NoHeating` hides them); turn on re-uses the other schedule's mode if possible, else floor → infra → manual. Attributes: must temp, night temp, infra/floor state, active schedule. |
 | `number.uc4_<room>_mon_fri_day_temperature` … (4×) | `_Day` / `_Night` of each VARA |
 | `select.uc4_<room>_mon_fri_heating_mode` (2×) | `_Mode` of each VARA |
 

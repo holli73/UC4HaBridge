@@ -30,6 +30,7 @@ from .const import (
     CONF_VARA_WEEKEND,
     DEFAULT_CLIENT,
     DEFAULT_SCAN_INTERVAL,
+    DEFAULT_TRIGGER_OBJECT,
     DEFAULT_URL,
     DEFAULT_VARA_SUMMARY,
     DEFAULT_VARA_WEEKDAY,
@@ -51,7 +52,7 @@ USER_SCHEMA = vol.Schema(
         vol.Required(CONF_VARA_WEEKDAY, default=DEFAULT_VARA_WEEKDAY): str,
         vol.Required(CONF_VARA_WEEKEND, default=DEFAULT_VARA_WEEKEND): str,
         vol.Required(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): SCAN_INTERVAL_VALIDATOR,
-        vol.Optional(CONF_TRIGGER_OBJECT): str,
+        vol.Optional(CONF_TRIGGER_OBJECT, default=DEFAULT_TRIGGER_OBJECT): str,
     }
 )
 
@@ -242,7 +243,7 @@ class AutomicHeatingOptionsFlow(OptionsFlowWithReload):
                 CONF_SCAN_INTERVAL, entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
             ),
             CONF_TRIGGER_OBJECT: entry.options.get(
-                CONF_TRIGGER_OBJECT, entry.data.get(CONF_TRIGGER_OBJECT, "")
+                CONF_TRIGGER_OBJECT, entry.data.get(CONF_TRIGGER_OBJECT, DEFAULT_TRIGGER_OBJECT)
             ),
         }
         return self.async_show_form(
