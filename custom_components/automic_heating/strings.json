@@ -18,35 +18,92 @@
       "reauth_confirm": {
         "title": "Re-authenticate Automic",
         "description": "The API token for {username} is no longer valid. Enter the password to create a new one.",
-        "data": { "password": "Password" }
+        "data": {
+          "password": "Password"
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigure Automic",
+        "description": "Change the connection or VARA names. The password is only needed when URL, client or user change (a new API token is created).",
+        "data": {
+          "url": "REST URL",
+          "client": "Client",
+          "username": "User (USER/DEPARTMENT)",
+          "password": "Password (optional)",
+          "vara_summary": "Summary VARA (actual values)",
+          "vara_weekday": "Settings VARA Mon-Fri",
+          "vara_weekend": "Settings VARA Sat-Sun"
+        },
+        "data_description": {
+          "password": "Leave empty to keep the current API token."
+        }
       }
     },
     "error": {
       "invalid_auth": "Login rejected by Automic.",
       "cannot_connect": "Cannot reach the Automic REST API.",
-      "invalid_vara": "One of the VARA objects could not be read."
+      "invalid_vara": "One of the VARA objects could not be read.",
+      "password_required": "URL, client or user changed: enter the password to create a new API token."
     },
     "abort": {
       "already_configured": "This Automic client/VARA set is already configured.",
-      "reauth_successful": "Re-authentication successful."
+      "reauth_successful": "Re-authentication successful.",
+      "reconfigure_successful": "Reconfiguration successful."
     }
   },
   "entity": {
-    "climate": { "room": { "name": "Thermostat" } },
+    "climate": {
+      "room": {
+        "name": "Thermostat"
+      }
+    },
     "number": {
-      "weekday_day": { "name": "Mon-Fri day temperature" },
-      "weekday_night": { "name": "Mon-Fri night temperature" },
-      "weekend_day": { "name": "Sat-Sun day temperature" },
-      "weekend_night": { "name": "Sat-Sun night temperature" }
+      "weekday_day": {
+        "name": "Mon-Fri day temperature"
+      },
+      "weekday_night": {
+        "name": "Mon-Fri night temperature"
+      },
+      "weekend_day": {
+        "name": "Sat-Sun day temperature"
+      },
+      "weekend_night": {
+        "name": "Sat-Sun night temperature"
+      }
     },
     "select": {
       "weekday_mode": {
         "name": "Mon-Fri heating mode",
-        "state": { "off": "Off", "infra": "Infrared", "floor": "Floor", "both": "Infrared + floor", "manual": "Manual" }
+        "state": {
+          "off": "Off",
+          "infra": "Infrared",
+          "floor": "Floor",
+          "both": "Infrared + floor",
+          "manual": "Manual"
+        }
       },
       "weekend_mode": {
         "name": "Sat-Sun heating mode",
-        "state": { "off": "Off", "infra": "Infrared", "floor": "Floor", "both": "Infrared + floor", "manual": "Manual" }
+        "state": {
+          "off": "Off",
+          "infra": "Infrared",
+          "floor": "Floor",
+          "both": "Infrared + floor",
+          "manual": "Manual"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Automic Heating options",
+        "data": {
+          "scan_interval": "Poll interval (seconds)"
+        },
+        "data_description": {
+          "scan_interval": "How often the VARAs are read from Automic (5-3600 s)."
+        }
       }
     }
   }

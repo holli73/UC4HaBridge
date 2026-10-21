@@ -50,7 +50,10 @@ class AutomicHeatingCoordinator(DataUpdateCoordinator[HeatingData]):
             config_entry=entry,
             name=DOMAIN,
             update_interval=timedelta(
-                seconds=entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+                seconds=entry.options.get(
+                    CONF_SCAN_INTERVAL,
+                    entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL),
+                )
             ),
             always_update=False,
         )

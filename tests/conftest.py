@@ -1,6 +1,7 @@
 """Fixtures: real VARA exports, Automic client mocked."""
 
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
@@ -21,6 +22,7 @@ from custom_components.automic_heating.const import (
     DEFAULT_VARA_WEEKEND,
     DOMAIN,
 )
+from custom_components.automic_heating.api import Token
 from custom_components.automic_heating.models import Vara
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -62,10 +64,16 @@ def config_entry() -> MockConfigEntry:
 
 @pytest.fixture
 def mock_client():
-    with patch(
-        "custom_components.automic_heating.AutomicClient", autospec=True
-    ) as cls:
+    """One mocked client shared by the integration and the config flow."""
+    with (
+        patch("custom_components.automic_heating.AutomicClient", autospec=True) as cls,
+        patch("custom_components.automic_heating.config_flow.AutomicClient", new=cls),
+    ):
         client = cls.return_value
         client.get_vara = AsyncMock(side_effect=load_vara)
         client.put_var_col = AsyncMock()
+        client.create_token = AsyncMock(
+            return_value=Token("HA_BRIDGE_2", "tok-2", datetime(2099, 6, 1, tzinfo=timezone.utc))
+        )
+        client.delete_token = AsyncMock()
         yield client
