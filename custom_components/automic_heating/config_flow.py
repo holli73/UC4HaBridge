@@ -24,6 +24,7 @@ from .const import (
     CONF_TOKEN,
     CONF_TOKEN_EXPIRES,
     CONF_TOKEN_NAME,
+    CONF_TRIGGER_OBJECT,
     CONF_VARA_SUMMARY,
     CONF_VARA_WEEKDAY,
     CONF_VARA_WEEKEND,
@@ -50,6 +51,14 @@ USER_SCHEMA = vol.Schema(
         vol.Required(CONF_VARA_WEEKDAY, default=DEFAULT_VARA_WEEKDAY): str,
         vol.Required(CONF_VARA_WEEKEND, default=DEFAULT_VARA_WEEKEND): str,
         vol.Required(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): SCAN_INTERVAL_VALIDATOR,
+        vol.Optional(CONF_TRIGGER_OBJECT): str,
+    }
+)
+
+OPTIONS_SCHEMA = vol.Schema(
+    {
+        vol.Required(CONF_SCAN_INTERVAL): SCAN_INTERVAL_VALIDATOR,
+        vol.Optional(CONF_TRIGGER_OBJECT): str,
     }
 )
 
@@ -104,6 +113,10 @@ class AutomicHeatingConfigFlow(ConfigFlow, domain=DOMAIN):
             if new_token:
                 await client.delete_token(new_token.name)
             return {}, {"base": "invalid_vara"}
+        if (trigger := data.get(CONF_TRIGGER_OBJECT)) and not await client.object_exists(trigger):
+            if new_token:
+                await client.delete_token(new_token.name)
+            return {}, {"base": "trigger_not_found"}
         if new_token is None:
             return {}, {}
         return {
@@ -126,6 +139,7 @@ class AutomicHeatingConfigFlow(ConfigFlow, domain=DOMAIN):
             )
             self._abort_if_unique_id_configured()
             password = user_input.pop(CONF_PASSWORD)
+            _normalize_trigger(user_input)
             token_data, errors = await self._async_validate(user_input, password)
             if not errors:
                 return self.async_create_entry(
@@ -210,15 +224,36 @@ class AutomicHeatingOptionsFlow(OptionsFlowWithReload):
     """Runtime options; saving reloads the entry."""
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        entry = self.config_entry
+        errors: dict[str, str] = {}
         if user_input is not None:
-            return self.async_create_entry(data=user_input)
-        current = self.config_entry.options.get(
-            CONF_SCAN_INTERVAL,
-            self.config_entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL),
-        )
+            _normalize_trigger(user_input)
+            trigger = user_input[CONF_TRIGGER_OBJECT]
+            try:
+                exists = not trigger or await entry.runtime_data.client.object_exists(trigger)
+            except AutomicError:
+                errors["base"] = "cannot_connect"
+            else:
+                if exists:
+                    return self.async_create_entry(data=user_input)
+                errors["base"] = "trigger_not_found"
+        current = {
+            CONF_SCAN_INTERVAL: entry.options.get(
+                CONF_SCAN_INTERVAL, entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+            ),
+            CONF_TRIGGER_OBJECT: entry.options.get(
+                CONF_TRIGGER_OBJECT, entry.data.get(CONF_TRIGGER_OBJECT, "")
+            ),
+        }
         return self.async_show_form(
             step_id="init",
-            data_schema=vol.Schema(
-                {vol.Required(CONF_SCAN_INTERVAL, default=current): SCAN_INTERVAL_VALIDATOR}
+            data_schema=self.add_suggested_values_to_schema(
+                OPTIONS_SCHEMA, user_input or current
             ),
+            errors=errors,
         )
+
+
+def _normalize_trigger(user_input: dict[str, Any]) -> None:
+    """Automic object names are upper case; empty means no trigger."""
+    user_input[CONF_TRIGGER_OBJECT] = (user_input.get(CONF_TRIGGER_OBJECT) or "").strip().upper()

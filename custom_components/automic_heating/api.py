@@ -162,13 +162,48 @@ class AutomicClient:
                 raise AutomicError(f"Script {run_id} did not finish in time")
             await asyncio.sleep(0.5)
 
-    async def put_var_col(self, vara: str, key: str, column: int, value: str) -> None:
-        """Write a single VARA cell via an inline :PUT_VAR_COL script."""
-        if not (_SAFE_NAME.match(vara) and _SAFE_NAME.match(key)):
-            raise ValueError(f"Unsafe VARA name or key: {vara!r} / {key!r}")
-        if not _SAFE_VALUE.match(value) or not 1 <= column <= 5:
-            raise ValueError(f"Unsafe value or column: {value!r} / {column}")
-        await self.run_script(f':PUT_VAR_COL {vara}, "{key}", {column}, "{value}"')
+    async def object_exists(self, name: str) -> bool:
+        if not _SAFE_NAME.match(name):
+            return False
+        try:
+            await self._request("GET", f"/objects/{quote(name)}")
+        except AutomicAuthError:
+            raise
+        except AutomicError:
+            return False
+        return True
+
+    async def put_var_col(
+        self, vara: str, key: str, column: int, value: str, trigger: str | None = None
+    ) -> None:
+        """Write a single VARA cell via an inline :PUT_VAR_COL script.
+
+        With a trigger object, the same script activates it right after the write so
+        Automic processes the change immediately. A failed activation ends the script
+        with :STOP MSG, which surfaces as an error in HA.
+        """
+        await self.run_script(build_write_script(vara, key, column, value, trigger))
+
+
+def build_write_script(
+    vara: str, key: str, column: int, value: str, trigger: str | None = None
+) -> str:
+    if not (_SAFE_NAME.match(vara) and _SAFE_NAME.match(key)):
+        raise ValueError(f"Unsafe VARA name or key: {vara!r} / {key!r}")
+    if not _SAFE_VALUE.match(value) or not 1 <= column <= 5:
+        raise ValueError(f"Unsafe value or column: {value!r} / {column}")
+    lines = [f':PUT_VAR_COL {vara}, "{key}", {column}, "{value}"']
+    if trigger:
+        if not _SAFE_NAME.match(trigger):
+            raise ValueError(f"Unsafe trigger object name: {trigger!r}")
+        lines += [
+            f":SET &HA_RUNID# = ACTIVATE_UC_OBJECT({trigger})",
+            ":IF &HA_RUNID# = 0",
+            f':  STOP MSG, 50, "HA bridge: activation of {trigger} failed"',
+            ":ENDIF",
+            ':PRINT "HA_TRIGGER|&HA_RUNID#"',
+        ]
+    return "\n".join(lines)
 
 
 def format_number(value: float) -> str:

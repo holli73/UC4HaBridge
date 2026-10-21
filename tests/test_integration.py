@@ -49,7 +49,7 @@ async def test_set_temperature_weekday(hass, config_entry, mock_client) -> None:
     await hass.services.async_call(
         "climate", "set_temperature", {"entity_id": CLIMATE, "temperature": 21.5}, blocking=True
     )
-    mock_client.put_var_col.assert_awaited_once_with(DEFAULT_VARA_WEEKDAY, "ClaudeRoomTest", 1, "21.5")
+    mock_client.put_var_col.assert_awaited_once_with(DEFAULT_VARA_WEEKDAY, "ClaudeRoomTest", 1, "21.5", None)
 
 
 @pytest.mark.freeze_time("2026-10-24 10:00:00+00:00")  # Saturday
@@ -58,7 +58,7 @@ async def test_set_temperature_weekend(hass, config_entry, mock_client) -> None:
     await hass.services.async_call(
         "climate", "set_temperature", {"entity_id": CLIMATE, "temperature": 23}, blocking=True
     )
-    mock_client.put_var_col.assert_awaited_once_with(DEFAULT_VARA_WEEKEND, "ClaudeRoomTest", 1, "23")
+    mock_client.put_var_col.assert_awaited_once_with(DEFAULT_VARA_WEEKEND, "ClaudeRoomTest", 1, "23", None)
 
 
 @pytest.mark.freeze_time("2026-10-21 10:00:00+00:00")
@@ -67,11 +67,11 @@ async def test_hvac_and_preset(hass, config_entry, mock_client) -> None:
     await hass.services.async_call(
         "climate", "set_hvac_mode", {"entity_id": CLIMATE, "hvac_mode": "off"}, blocking=True
     )
-    mock_client.put_var_col.assert_awaited_with(DEFAULT_VARA_WEEKDAY, "ClaudeRoomTest", 3, "0")
+    mock_client.put_var_col.assert_awaited_with(DEFAULT_VARA_WEEKDAY, "ClaudeRoomTest", 3, "0", None)
     await hass.services.async_call(
         "climate", "set_preset_mode", {"entity_id": CLIMATE, "preset_mode": "both"}, blocking=True
     )
-    mock_client.put_var_col.assert_awaited_with(DEFAULT_VARA_WEEKDAY, "ClaudeRoomTest", 3, "3")
+    mock_client.put_var_col.assert_awaited_with(DEFAULT_VARA_WEEKDAY, "ClaudeRoomTest", 3, "3", None)
 
 
 @pytest.mark.freeze_time("2026-10-21 10:00:00+00:00")
@@ -84,13 +84,13 @@ async def test_number_and_select(hass, config_entry, mock_client) -> None:
         {"entity_id": "number.uc4_clauderoomtest_sat_sun_night_temperature", "value": 18},
         blocking=True,
     )
-    mock_client.put_var_col.assert_awaited_with(DEFAULT_VARA_WEEKEND, "ClaudeRoomTest", 2, "18")
+    mock_client.put_var_col.assert_awaited_with(DEFAULT_VARA_WEEKEND, "ClaudeRoomTest", 2, "18", None)
     await hass.services.async_call(
         "select", "select_option",
         {"entity_id": "select.uc4_clauderoomtest_mon_fri_heating_mode", "option": "floor"},
         blocking=True,
     )
-    mock_client.put_var_col.assert_awaited_with(DEFAULT_VARA_WEEKDAY, "ClaudeRoomTest", 3, "2")
+    mock_client.put_var_col.assert_awaited_with(DEFAULT_VARA_WEEKDAY, "ClaudeRoomTest", 3, "2", None)
 
 
 @pytest.mark.freeze_time("2026-10-21 10:00:00+00:00")

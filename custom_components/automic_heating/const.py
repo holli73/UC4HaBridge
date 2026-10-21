@@ -13,6 +13,7 @@ CONF_VARA_SUMMARY = "vara_summary"
 CONF_VARA_WEEKDAY = "vara_weekday"
 CONF_VARA_WEEKEND = "vara_weekend"
 CONF_SCAN_INTERVAL = "scan_interval"
+CONF_TRIGGER_OBJECT = "trigger_object"
 
 DEFAULT_URL = "<AutomicRestEndpoint>"
 DEFAULT_CLIENT = 1

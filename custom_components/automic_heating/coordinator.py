@@ -24,6 +24,7 @@ from .const import (
     CONF_TOKEN,
     CONF_TOKEN_EXPIRES,
     CONF_TOKEN_NAME,
+    CONF_TRIGGER_OBJECT,
     CONF_VARA_SUMMARY,
     CONF_VARA_WEEKDAY,
     CONF_VARA_WEEKEND,
@@ -78,6 +79,12 @@ class AutomicHeatingCoordinator(DataUpdateCoordinator[HeatingData]):
             raise UpdateFailed(str(err)) from err
         return HeatingData(summary, weekday, weekend)
 
+    @property
+    def trigger_object(self) -> str | None:
+        """Object activated after every write (options override setup data)."""
+        entry = self.config_entry
+        return entry.options.get(CONF_TRIGGER_OBJECT, entry.data.get(CONF_TRIGGER_OBJECT)) or None
+
     # ---- schedule helpers ------------------------------------------------
 
     @staticmethod
@@ -100,13 +107,16 @@ class AutomicHeatingCoordinator(DataUpdateCoordinator[HeatingData]):
         text = str(value) if isinstance(value, int) else format_number(value)
         async with self._write_lock:
             try:
-                await self.client.put_var_col(vara.name, room, index, text)
+                await self.client.put_var_col(vara.name, room, index, text, self.trigger_object)
             except AutomicAuthError as err:
                 self.config_entry.async_start_reauth(self.hass)
                 raise HomeAssistantError(str(err)) from err
             except AutomicError as err:
                 raise HomeAssistantError(f"Automic write failed: {err}") from err
-            _LOGGER.debug("Wrote %s/%s/_%s = %s", vara.name, room, column, text)
+            _LOGGER.debug(
+                "Wrote %s/%s/_%s = %s (trigger: %s)",
+                vara.name, room, column, text, self.trigger_object,
+            )
         await self.async_refresh()
 
     # ---- token renewal ---------------------------------------------------
