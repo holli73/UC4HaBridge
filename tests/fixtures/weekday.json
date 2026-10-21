@@ -1,0 +1,172 @@
+{
+  "total" : 1,
+  "data" : {
+    "vara" : {
+      "metadata" : {
+        "version" : "24.4.4"
+      },
+      "general_attributes" : {
+        "type" : "VARA",
+        "name" : "HEATING.VARA.ROOM.INFORMATION",
+        "sub_type" : "STATIC",
+        "minimum_ae_version" : "11.2"
+      },
+      "variable_definitions" : {
+        "data_type" : "C",
+        "validity_range" : "FREI",
+        "on_not_found" : "I",
+        "type" : "STATIC",
+        "column_count" : 5,
+        "sort_order" : "0"
+      },
+      "static_values" : [ {
+        "key" : "Bad",
+        "validity_range" : "FREI",
+        "value1" : "22.5",
+        "value2" : " 21",
+        "value3" : "3",
+        "value4" : "/og-temp/temp/28A080AE05000000",
+        "value5" : "5"
+      }, {
+        "key" : "ClaudeRoomTest",
+        "validity_range" : "FREI",
+        "value1" : "22",
+        "value2" : "20",
+        "value3" : "4",
+        "value4" : "/ClaudeCodeDummy",
+        "value5" : "17"
+      }, {
+        "key" : "EssZimmer",
+        "validity_range" : "FREI",
+        "value1" : "22.0",
+        "value2" : "19",
+        "value3" : "2",
+        "value4" : "/og-temp/temp/28B60DAE050000CE",
+        "value5" : "16792"
+      }, {
+        "key" : "GangOg",
+        "validity_range" : "FREI",
+        "value1" : "20.5",
+        "value2" : " 18.5",
+        "value3" : "2",
+        "value4" : "/og-temp/temp/285C72AE0500002A",
+        "value5" : "12514"
+      }, {
+        "key" : "Kati",
+        "validity_range" : "FREI",
+        "value1" : "22.5",
+        "value2" : "19.5",
+        "value3" : "2",
+        "value4" : "/og-temp/temp/282236AD050000DF",
+        "value5" : "12535"
+      }, {
+        "key" : "KellerLift",
+        "validity_range" : "FREI",
+        "value1" : "22",
+        "value2" : " 16",
+        "value3" : "0",
+        "value4" : "/eg-vk-pi/temp/28A9DEAC050000A6",
+        "value5" : "15"
+      }, {
+        "key" : "KellerStueberl",
+        "validity_range" : "FREI",
+        "value1" : "22",
+        "value2" : "16",
+        "value3" : "4",
+        "value4" : "/eg-vk-pi/temp/105190D9020800FE",
+        "value5" : "17"
+      }, {
+        "key" : "Kueche",
+        "validity_range" : "FREI",
+        "value1" : "22.5",
+        "value2" : " 19",
+        "value3" : "2",
+        "value4" : "/og-temp/temp/283324AE050000C4",
+        "value5" : "16794"
+      }, {
+        "key" : "Michi",
+        "validity_range" : "FREI",
+        "value1" : "21.5",
+        "value2" : "19.5",
+        "value3" : "2",
+        "value4" : "/og-temp/temp/283248AD0500004B",
+        "value5" : "16856"
+      }, {
+        "key" : "SchlafZimmer",
+        "validity_range" : "FREI",
+        "value1" : "19",
+        "value2" : "17",
+        "value3" : "2",
+        "value4" : "/og-temp/temp/28E258AE0500007B",
+        "value5" : "12519"
+      }, {
+        "key" : "SchrankRaum",
+        "validity_range" : "FREI",
+        "value1" : "19",
+        "value2" : "18",
+        "value3" : "2",
+        "value4" : "/og-temp/temp/285929AD050000AC",
+        "value5" : "11"
+      }, {
+        "key" : "Speis",
+        "validity_range" : "FREI",
+        "value1" : "20.5",
+        "value2" : " 18.5",
+        "value3" : "0",
+        "value4" : "/og-temp/temp/2858B2AC050000D3",
+        "value5" : "16797"
+      }, {
+        "key" : "StiegenHausDb",
+        "validity_range" : "FREI",
+        "value1" : "19.5",
+        "value2" : "18.5",
+        "value3" : "0",
+        "value4" : "/og-temp/temp/286B36AD0500003C",
+        "value5" : "12505"
+      }, {
+        "key" : "StiegenHausEg",
+        "validity_range" : "FREI",
+        "value1" : "20",
+        "value2" : "18.5",
+        "value3" : "1",
+        "value4" : "/eg-vk-pi/temp/28F2F5F504000018",
+        "value5" : "2"
+      }, {
+        "key" : "StiegenHausOg",
+        "validity_range" : "FREI",
+        "value1" : "20",
+        "value2" : " 17.5",
+        "value3" : "2",
+        "value4" : "/og-temp/temp/283AB0AD05000072",
+        "value5" : "14"
+      }, {
+        "key" : "Wc",
+        "validity_range" : "FREI",
+        "value1" : "22.5",
+        "value2" : " 20.5",
+        "value3" : "2",
+        "value4" : "/og-temp/temp/28C346AD050000AC",
+        "value5" : "6"
+      }, {
+        "key" : "WohnZimmer",
+        "validity_range" : "FREI",
+        "value1" : "22.5",
+        "value2" : " 20",
+        "value3" : "2",
+        "value4" : "/og-temp/temp/289FB2AD05000046",
+        "value5" : "16844"
+      }, {
+        "key" : "_Room",
+        "validity_range" : "FREI",
+        "value1" : "_Day",
+        "value2" : "_Night",
+        "value3" : "_Mode(0=off/1=infra/2=floor/3=both/4=manual)",
+        "value4" : "_TempSensor",
+        "value5" : "_DsSZoneID"
+      } ]
+    }
+  },
+  "path" : "_MY-I-HOUSE/_HEATING/ROOM.CONTROL",
+  "client" : 1,
+  "hasmore" : false
+}

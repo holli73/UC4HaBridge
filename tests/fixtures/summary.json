@@ -1,0 +1,238 @@
+{
+  "total" : 1,
+  "data" : {
+    "vara" : {
+      "metadata" : {
+        "version" : "24.4.4"
+      },
+      "general_attributes" : {
+        "type" : "VARA",
+        "name" : "HEATING.VARA.ROOM.INFORMATION.SUMMARY",
+        "sub_type" : "STATIC",
+        "minimum_ae_version" : "11.2"
+      },
+      "variable_definitions" : {
+        "data_type" : "C",
+        "validity_range" : "FREI",
+        "on_not_found" : "I",
+        "type" : "STATIC",
+        "column_count" : 5,
+        "sort_order" : "0"
+      },
+      "static_values" : [ {
+        "key" : "Bad",
+        "validity_range" : "FREI",
+        "value1" : "22.56",
+        "value2" : "3",
+        "value3" : "Off",
+        "value4" : "Off",
+        "value5" : "+0000000000000022.5000000000000000"
+      }, {
+        "key" : "Boiler",
+        "validity_range" : "FREI",
+        "value1" : "55.0",
+        "value2" : "On"
+      }, {
+        "key" : "ClaudeRoomTest",
+        "validity_range" : "FREI",
+        "value1" : "23",
+        "value2" : "4",
+        "value3" : "Off",
+        "value4" : "Off",
+        "value5" : "00000000022.0000000000000000"
+      }, {
+        "key" : "DachAussenSchwarz",
+        "validity_range" : "FREI",
+        "value1" : "22.12"
+      }, {
+        "key" : "DachAussenWeiss",
+        "validity_range" : "FREI",
+        "value1" : "85.00"
+      }, {
+        "key" : "DachBodenAussen",
+        "validity_range" : "FREI",
+        "value1" : "11.88"
+      }, {
+        "key" : "DachBodenMiner",
+        "validity_range" : "FREI",
+        "value1" : "14.62"
+      }, {
+        "key" : "DachBodenServerRack",
+        "validity_range" : "FREI",
+        "value1" : "20.38"
+      }, {
+        "key" : "DachBodenServerRaum",
+        "validity_range" : "FREI",
+        "value1" : "15.38"
+      }, {
+        "key" : "EingangKamin",
+        "validity_range" : "FREI",
+        "value1" : "85.0"
+      }, {
+        "key" : "EssZimmer",
+        "validity_range" : "FREI",
+        "value1" : "23.19",
+        "value2" : "2",
+        "value3" : "Off",
+        "value4" : "Off",
+        "value5" : "+0000000000000022.0000000000000000"
+      }, {
+        "key" : "FussBodenRueckLauf",
+        "validity_range" : "FREI",
+        "value1" : "29.1"
+      }, {
+        "key" : "FussBodenVorLauf",
+        "validity_range" : "FREI",
+        "value1" : "27.8"
+      }, {
+        "key" : "GangOg",
+        "validity_range" : "FREI",
+        "value1" : "22.44",
+        "value2" : "3",
+        "value3" : "Off",
+        "value4" : "Off",
+        "value5" : "+0000000000000020.5000000000000000"
+      }, {
+        "key" : "GartenAussen",
+        "validity_range" : "FREI",
+        "value1" : "12.50"
+      }, {
+        "key" : "Kati",
+        "validity_range" : "FREI",
+        "value1" : "22.62",
+        "value2" : "2",
+        "value3" : "Off",
+        "value4" : "Off",
+        "value5" : "+0000000000000022.5000000000000000"
+      }, {
+        "key" : "KellerKueche",
+        "validity_range" : "FREI",
+        "value1" : "19.69"
+      }, {
+        "key" : "KellerLift",
+        "validity_range" : "FREI",
+        "value1" : "18.12",
+        "value2" : "0",
+        "value3" : "Off",
+        "value4" : "NoHeating",
+        "value5" : "+0000000000000022.0000000000000000"
+      }, {
+        "key" : "KellerPool",
+        "validity_range" : "FREI",
+        "value1" : "19.94"
+      }, {
+        "key" : "KellerStueberl",
+        "validity_range" : "FREI",
+        "value1" : "19.19",
+        "value2" : "4",
+        "value3" : "Off",
+        "value4" : "NoHeating",
+        "value5" : "+0000000000000022.0000000000000000"
+      }, {
+        "key" : "KellerWc",
+        "validity_range" : "FREI",
+        "value1" : "20.00"
+      }, {
+        "key" : "Kueche",
+        "validity_range" : "FREI",
+        "value1" : "23.00",
+        "value2" : "2",
+        "value3" : "Off",
+        "value4" : "Off",
+        "value5" : "+0000000000000022.5000000000000000"
+      }, {
+        "key" : "Lift",
+        "validity_range" : "FREI",
+        "value1" : "25.50"
+      }, {
+        "key" : "Michi",
+        "validity_range" : "FREI",
+        "value1" : "21.69",
+        "value2" : "2",
+        "value3" : "Off",
+        "value4" : "Off",
+        "value5" : "+0000000000000021.5000000000000000"
+      }, {
+        "key" : "PoolSolarIn",
+        "validity_range" : "FREI",
+        "value1" : "20.5"
+      }, {
+        "key" : "PoolVorFilter",
+        "validity_range" : "FREI",
+        "value1" : "20.6"
+      }, {
+        "key" : "SchlafZimmer",
+        "validity_range" : "FREI",
+        "value1" : "19.94",
+        "value2" : "2",
+        "value3" : "Off",
+        "value4" : "Off",
+        "value5" : "+0000000000000019.0000000000000000"
+      }, {
+        "key" : "SchrankRaum",
+        "validity_range" : "FREI",
+        "value1" : "20.25",
+        "value2" : "2",
+        "value4" : "Off",
+        "value5" : "+0000000000000019.0000000000000000"
+      }, {
+        "key" : "Speis",
+        "validity_range" : "FREI",
+        "value1" : "21.94"
+      }, {
+        "key" : "StiegenHausDb",
+        "validity_range" : "FREI",
+        "value1" : "21.00",
+        "value2" : "1",
+        "value3" : "Off",
+        "value5" : "+0000000000000018.5000000000000000"
+      }, {
+        "key" : "StiegenHausEg",
+        "validity_range" : "FREI",
+        "value1" : "22.25",
+        "value2" : "1",
+        "value3" : "Off",
+        "value4" : "NoHeating",
+        "value5" : "+0000000000000020.0000000000000000"
+      }, {
+        "key" : "StiegenHausOg",
+        "validity_range" : "FREI",
+        "value1" : "21.38",
+        "value2" : "2",
+        "value3" : "Off",
+        "value4" : "Off",
+        "value5" : "+0000000000000020.0000000000000000"
+      }, {
+        "key" : "TischLerEi",
+        "validity_range" : "FREI",
+        "value1" : "17.75"
+      }, {
+        "key" : "Wc",
+        "validity_range" : "FREI",
+        "value1" : "22.56",
+        "value2" : "2",
+        "value4" : "Off",
+        "value5" : "+0000000000000022.5000000000000000"
+      }, {
+        "key" : "WohnZimmer",
+        "validity_range" : "FREI",
+        "value1" : "22.81",
+        "value2" : "2",
+        "value3" : "Off",
+        "value4" : "Off",
+        "value5" : "+0000000000000022.5000000000000000"
+      }, {
+        "key" : "_Room",
+        "validity_range" : "FREI",
+        "value1" : "_actTemp",
+        "value2" : "_HeatingMode",
+        "value3" : "_InfraHeating",
+        "value4" : "_FloorHeating",
+        "value5" : "_MustTemp"
+      } ]
+    }
+  },
+  "path" : "_MY-I-HOUSE/_HEATING",
+  "client" : 1,
+  "hasmore" : false
+}
