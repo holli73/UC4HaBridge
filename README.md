@@ -51,6 +51,7 @@ Settings → Devices & services → **Automic Heating**:
 | ⋮ → **Reconfigure** | REST URL, client, user, VARA names. The password is only needed if URL, client or user change; a new API token is then created. If you leave it empty, the current token is kept. |
 | ⋮ → **Re-authenticate** | Shown automatically if the token is rejected. |
 | Device → ⋮ → **Delete** | Only for rooms that no longer exist in the Mon-Fri settings VARA (their entities show as unavailable). |
+| ⋮ → **Reload** | Picks up **new rooms** added to the settings VARA in Automic. Rooms are read once at startup; values of existing rooms sync on every poll without a reload. |
 
 Requires Home Assistant 2025.8 or newer.
 
