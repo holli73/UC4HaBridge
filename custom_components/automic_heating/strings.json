@@ -12,11 +12,13 @@
           "vara_summary": "Summary VARA (actual values)",
           "vara_weekday": "Settings VARA Mon-Fri",
           "vara_weekend": "Settings VARA Sat-Sun",
+          "vara_day_night": "Day/night VARA (start hours, summer)",
           "scan_interval": "Poll interval (seconds)",
           "trigger_object": "Trigger object after change (optional)"
         },
         "data_description": {
-          "trigger_object": "Automic object activated right after every change from HA (ACTIVATE_UC_OBJECT), e.g. the heating workflow. Leave empty to wait for the normal cycle."
+          "trigger_object": "Automic object activated right after every change from HA (ACTIVATE_UC_OBJECT), e.g. the heating workflow. Leave empty to wait for the normal cycle.",
+          "vara_day_night": "Rows DayTimeStart and NightTimeStart (hour) select the _Day or _Night column; IsSummer = Yes disables heating."
         }
       },
       "reauth_confirm": {
@@ -36,10 +38,12 @@
           "password": "Password (optional)",
           "vara_summary": "Summary VARA (actual values)",
           "vara_weekday": "Settings VARA Mon-Fri",
-          "vara_weekend": "Settings VARA Sat-Sun"
+          "vara_weekend": "Settings VARA Sat-Sun",
+          "vara_day_night": "Day/night VARA (start hours, summer)"
         },
         "data_description": {
-          "password": "Leave empty to keep the current API token."
+          "password": "Leave empty to keep the current API token.",
+          "vara_day_night": "Rows DayTimeStart and NightTimeStart (hour) select the _Day or _Night column; IsSummer = Yes disables heating."
         }
       }
     },
@@ -116,6 +120,11 @@
     "error": {
       "trigger_not_found": "The trigger object does not exist in this client.",
       "cannot_connect": "Cannot reach the Automic REST API."
+    }
+  },
+  "exceptions": {
+    "summer": {
+      "message": "Summer mode is active in Automic (IsSummer = Yes): heating is disabled."
     }
   }
 }

@@ -15,6 +15,7 @@ from custom_components.automic_heating.const import (
     CONF_TOKEN,
     CONF_TOKEN_NAME,
     CONF_TRIGGER_OBJECT,
+    DEFAULT_VARA_DAY_NIGHT,
     DEFAULT_VARA_SUMMARY,
     DEFAULT_VARA_WEEKDAY,
     DEFAULT_VARA_WEEKEND,
@@ -27,6 +28,7 @@ RECONFIGURE_INPUT = {
     "vara_summary": DEFAULT_VARA_SUMMARY,
     "vara_weekday": DEFAULT_VARA_WEEKDAY,
     "vara_weekend": DEFAULT_VARA_WEEKEND,
+    "vara_day_night": DEFAULT_VARA_DAY_NIGHT,
 }
 
 

@@ -25,6 +25,7 @@ from .const import (
     CONF_TOKEN_EXPIRES,
     CONF_TOKEN_NAME,
     CONF_TRIGGER_OBJECT,
+    CONF_VARA_DAY_NIGHT,
     CONF_VARA_SUMMARY,
     CONF_VARA_WEEKDAY,
     CONF_VARA_WEEKEND,
@@ -32,6 +33,7 @@ from .const import (
     DEFAULT_SCAN_INTERVAL,
     DEFAULT_TRIGGER_OBJECT,
     DEFAULT_URL,
+    DEFAULT_VARA_DAY_NIGHT,
     DEFAULT_VARA_SUMMARY,
     DEFAULT_VARA_WEEKDAY,
     DEFAULT_VARA_WEEKEND,
@@ -51,6 +53,7 @@ USER_SCHEMA = vol.Schema(
         vol.Required(CONF_VARA_SUMMARY, default=DEFAULT_VARA_SUMMARY): str,
         vol.Required(CONF_VARA_WEEKDAY, default=DEFAULT_VARA_WEEKDAY): str,
         vol.Required(CONF_VARA_WEEKEND, default=DEFAULT_VARA_WEEKEND): str,
+        vol.Required(CONF_VARA_DAY_NIGHT, default=DEFAULT_VARA_DAY_NIGHT): str,
         vol.Required(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): SCAN_INTERVAL_VALIDATOR,
         vol.Optional(CONF_TRIGGER_OBJECT, default=DEFAULT_TRIGGER_OBJECT): str,
     }
@@ -75,6 +78,8 @@ RECONFIGURE_SCHEMA = vol.Schema(
         vol.Required(CONF_VARA_SUMMARY): str,
         vol.Required(CONF_VARA_WEEKDAY): str,
         vol.Required(CONF_VARA_WEEKEND): str,
+        # Default for entries created before this setting existed.
+        vol.Required(CONF_VARA_DAY_NIGHT, default=DEFAULT_VARA_DAY_NIGHT): str,
     }
 )
 
@@ -108,6 +113,7 @@ class AutomicHeatingConfigFlow(ConfigFlow, domain=DOMAIN):
         try:
             for key in (CONF_VARA_SUMMARY, CONF_VARA_WEEKDAY, CONF_VARA_WEEKEND):
                 await client.get_vara(data[key])
+            await client.get_vara(data.get(CONF_VARA_DAY_NIGHT, DEFAULT_VARA_DAY_NIGHT))
         except AutomicAuthError:
             return {}, {"base": "invalid_auth"}
         except (AutomicError, KeyError, ValueError):

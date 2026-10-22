@@ -14,9 +14,11 @@ from custom_components.automic_heating.const import (
     CONF_TOKEN,
     CONF_TOKEN_EXPIRES,
     CONF_TOKEN_NAME,
+    CONF_VARA_DAY_NIGHT,
     CONF_VARA_SUMMARY,
     CONF_VARA_WEEKDAY,
     CONF_VARA_WEEKEND,
+    DEFAULT_VARA_DAY_NIGHT,
     DEFAULT_VARA_SUMMARY,
     DEFAULT_VARA_WEEKDAY,
     DEFAULT_VARA_WEEKEND,
@@ -30,6 +32,7 @@ EXPORTS = {
     DEFAULT_VARA_SUMMARY: "summary.json",
     DEFAULT_VARA_WEEKDAY: "weekday.json",
     DEFAULT_VARA_WEEKEND: "weekend.json",
+    DEFAULT_VARA_DAY_NIGHT: "day_night.json",  # day 04-22, IsSummer No
 }
 
 
@@ -54,6 +57,7 @@ def config_entry() -> MockConfigEntry:
             CONF_VARA_SUMMARY: DEFAULT_VARA_SUMMARY,
             CONF_VARA_WEEKDAY: DEFAULT_VARA_WEEKDAY,
             CONF_VARA_WEEKEND: DEFAULT_VARA_WEEKEND,
+            CONF_VARA_DAY_NIGHT: DEFAULT_VARA_DAY_NIGHT,
             CONF_SCAN_INTERVAL: 15,
             CONF_TOKEN: "tok-1",
             CONF_TOKEN_NAME: "HA_BRIDGE_1",

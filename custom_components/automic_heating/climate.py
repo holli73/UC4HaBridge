@@ -1,8 +1,10 @@
 """Room thermostats.
 
 current temperature  <- SUMMARY _actTemp
-target temperature   <-> _Day of today's settings VARA (Mon-Fri weekday, Sat/Sun weekend)
+target temperature   <-> _Day or _Night of today's settings VARA (Mon-Fri weekday, Sat/Sun
+                         weekend), by the DayTimeStart/NightTimeStart hours of the day/night VARA
 hvac mode / preset   <-> _Mode of today's settings VARA (0=off, 1..4 = presets)
+IsSummer = Yes       -> off; turning on, presets and target changes are refused
 """
 
 from __future__ import annotations
@@ -18,6 +20,7 @@ from homeassistant.components.climate import (
 )
 from homeassistant.const import UnitOfTemperature
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.event import async_track_time_change
 
@@ -31,6 +34,7 @@ from .const import (
     COL_MODE,
     COL_MUST_TEMP,
     COL_NIGHT,
+    DOMAIN,
     MAX_TEMP,
     MIN_TEMP,
     MODE_IDS,
@@ -76,18 +80,33 @@ class AutomicRoomClimate(AutomicRoomEntity, ClimateEntity):
 
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()
-        # The active schedule flips at midnight without any VARA change.
+        # Schedule (midnight) and day/night period flip without any VARA change.
+        self._slot = self._current_slot()
         self.async_on_remove(
-            async_track_time_change(self.hass, self._midnight, hour=0, minute=0, second=1)
+            async_track_time_change(self.hass, self._time_changed, second=1)
         )
 
+    def _current_slot(self) -> tuple[str, str]:
+        return self._schedule, self._column
+
     @callback
-    def _midnight(self, _now: object) -> None:
-        self.async_write_ha_state()
+    def _time_changed(self, _now: object) -> None:
+        if (slot := self._current_slot()) != self._slot:
+            self._slot = slot
+            self.async_write_ha_state()
 
     @property
     def _schedule(self) -> str:
         return self.coordinator.active_schedule()
+
+    @property
+    def _column(self) -> str:
+        """_Day or _Night, whichever Automic uses right now."""
+        return self.coordinator.active_column()
+
+    def _check_not_summer(self) -> None:
+        if self.coordinator.summer:
+            raise ServiceValidationError(translation_domain=DOMAIN, translation_key="summer")
 
     @property
     def _mode(self) -> int | None:
@@ -116,10 +135,12 @@ class AutomicRoomClimate(AutomicRoomEntity, ClimateEntity):
 
     @property
     def target_temperature(self) -> float | None:
-        return self.coordinator.settings(self._schedule).number(self.room, COL_DAY)
+        return self.coordinator.settings(self._schedule).number(self.room, self._column)
 
     @property
     def hvac_mode(self) -> HVACMode | None:
+        if self.coordinator.summer:
+            return HVACMode.OFF
         mode = self._mode
         if mode is None:
             return None
@@ -127,12 +148,14 @@ class AutomicRoomClimate(AutomicRoomEntity, ClimateEntity):
 
     @property
     def preset_mode(self) -> str | None:
+        if self.coordinator.summer:
+            return None
         mode = self._mode
         return MODES.get(mode) if mode else None
 
     @property
     def hvac_action(self) -> HVACAction | None:
-        if self._mode == 0:
+        if self._mode == 0 or self.coordinator.summer:
             return HVACAction.OFF
         summary = self.coordinator.data.summary
         heating = "on" in (
@@ -147,7 +170,10 @@ class AutomicRoomClimate(AutomicRoomEntity, ClimateEntity):
         settings = self.coordinator.settings(self._schedule)
         return {
             "active_schedule": self._schedule,
+            "active_period": self.coordinator.active_period(),
+            "summer": self.coordinator.summer,
             "must_temperature": summary.number(self.room, COL_MUST_TEMP),
+            "day_temperature": settings.number(self.room, COL_DAY),
             "night_temperature": settings.number(self.room, COL_NIGHT),
             "automic_heating_mode": summary.integer(self.room, COL_HEATING_MODE),
             "infra_heating": summary.raw(self.room, COL_INFRA),
@@ -156,21 +182,26 @@ class AutomicRoomClimate(AutomicRoomEntity, ClimateEntity):
 
     async def async_set_temperature(self, **kwargs: Any) -> None:
         if (temperature := kwargs.get(ATTR_TEMPERATURE)) is not None:
+            self._check_not_summer()
             await self.coordinator.async_write(
-                self._schedule, self.room, COL_DAY, float(temperature)
+                self._schedule, self.room, self._column, float(temperature)
             )
 
     async def async_set_preset_mode(self, preset_mode: str) -> None:
+        self._check_not_summer()
         await self.coordinator.async_write(
             self._schedule, self.room, COL_MODE, MODE_IDS[preset_mode]
         )
 
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
         if hvac_mode == HVACMode.OFF:
+            if self.coordinator.summer:
+                return  # already off; keep _Mode for when summer ends
             mode = 0
-        elif self._mode:
-            return  # already heating
         else:
+            self._check_not_summer()
+            if self._mode:
+                return  # already heating
             mode = self._turn_on_mode()
         await self.coordinator.async_write(self._schedule, self.room, COL_MODE, mode)
 

@@ -1,0 +1,40 @@
+{
+  "total" : 1,
+  "data" : {
+    "vara" : {
+      "metadata" : {
+        "version" : "24.4.4"
+      },
+      "general_attributes" : {
+        "type" : "VARA",
+        "name" : "HEATING.VARA.DAY.NIGHT.START",
+        "sub_type" : "STATIC",
+        "minimum_ae_version" : "11.2"
+      },
+      "variable_definitions" : {
+        "data_type" : "C",
+        "validity_range" : "FREI",
+        "on_not_found" : "I",
+        "type" : "STATIC",
+        "column_count" : 5,
+        "sort_order" : "0"
+      },
+      "static_values" : [ {
+        "key" : "DayTimeStart",
+        "validity_range" : "FREI",
+        "value1" : "04"
+      }, {
+        "key" : "IsSummer",
+        "validity_range" : "FREI",
+        "value1" : "No"
+      }, {
+        "key" : "NightTimeStart",
+        "validity_range" : "FREI",
+        "value1" : "22"
+      } ]
+    }
+  },
+  "path" : "_MY-I-HOUSE/_HEATING/ROOM.CONTROL",
+  "client" : 1,
+  "hasmore" : false
+}

@@ -45,6 +45,11 @@ class Vara:
             return None
         return row[index - 1] or None
 
+    def value(self, key: str) -> str | None:
+        """First column of a row, for header-less key/value VARAs."""
+        row = self.rows.get(key)
+        return row[0] or None if row else None
+
     def number(self, key: str, column: str) -> float | None:
         """Parse values like "22.5", " 21" or "+0000000000000022.5000000000000000"."""
         value = self.raw(key, column)
@@ -67,6 +72,7 @@ class HeatingData:
     summary: Vara
     weekday: Vara
     weekend: Vara
+    day_night: Vara
 
     @property
     def rooms(self) -> list[str]:

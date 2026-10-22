@@ -1,6 +1,6 @@
 """Data coordinator: Automic is the single source of truth.
 
-Every poll exports the three VARAs. AE 24.4 does not bump any object counter or
+Every poll exports the four VARAs. AE 24.4 does not bump any object counter or
 modified_date on :PUT_VAR, so change detection compares the parsed snapshot:
 listeners are only notified when a value actually differs (always_update=False).
 Every write is followed by an immediate re-read; HA never keeps its own state.
@@ -25,12 +25,21 @@ from .const import (
     CONF_TOKEN_EXPIRES,
     CONF_TOKEN_NAME,
     CONF_TRIGGER_OBJECT,
+    COL_DAY,
+    COL_NIGHT,
+    CONF_VARA_DAY_NIGHT,
     CONF_VARA_SUMMARY,
     CONF_VARA_WEEKDAY,
     CONF_VARA_WEEKEND,
     DEFAULT_SCAN_INTERVAL,
     DEFAULT_TRIGGER_OBJECT,
+    DEFAULT_VARA_DAY_NIGHT,
     DOMAIN,
+    KEY_DAY_START,
+    KEY_NIGHT_START,
+    KEY_SUMMER,
+    PERIOD_DAY,
+    PERIOD_NIGHT,
     SCHEDULE_WEEKDAY,
     SCHEDULE_WEEKEND,
     TOKEN_LIFETIME,
@@ -64,21 +73,24 @@ class AutomicHeatingCoordinator(DataUpdateCoordinator[HeatingData]):
             "summary": entry.data[CONF_VARA_SUMMARY],
             SCHEDULE_WEEKDAY: entry.data[CONF_VARA_WEEKDAY],
             SCHEDULE_WEEKEND: entry.data[CONF_VARA_WEEKEND],
+            # Entries created before this setting existed use the default.
+            "day_night": entry.data.get(CONF_VARA_DAY_NIGHT, DEFAULT_VARA_DAY_NIGHT),
         }
         self._write_lock = asyncio.Lock()
 
     async def _async_update_data(self) -> HeatingData:
         try:
-            summary, weekday, weekend = await asyncio.gather(
+            summary, weekday, weekend, day_night = await asyncio.gather(
                 self.client.get_vara(self.vara_names["summary"]),
                 self.client.get_vara(self.vara_names[SCHEDULE_WEEKDAY]),
                 self.client.get_vara(self.vara_names[SCHEDULE_WEEKEND]),
+                self.client.get_vara(self.vara_names["day_night"]),
             )
         except AutomicAuthError as err:
             raise ConfigEntryAuthFailed(str(err)) from err
         except AutomicError as err:
             raise UpdateFailed(str(err)) from err
-        return HeatingData(summary, weekday, weekend)
+        return HeatingData(summary, weekday, weekend, day_night)
 
     @property
     def trigger_object(self) -> str | None:
@@ -99,6 +111,36 @@ class AutomicHeatingCoordinator(DataUpdateCoordinator[HeatingData]):
         """Mon-Fri -> weekday VARA, Sat/Sun -> weekend VARA (HA local time)."""
         now = now or dt_util.now()
         return SCHEDULE_WEEKEND if now.weekday() >= 5 else SCHEDULE_WEEKDAY
+
+    def _start_hour(self, key: str) -> int | None:
+        """Hour from the day/night VARA ("04", "22" or "04:00")."""
+        value = self.data.day_night.value(key) or ""
+        try:
+            hour = int(value.split(":", 1)[0])
+        except ValueError:
+            return None
+        return hour if 0 <= hour <= 23 else None
+
+    def active_period(self, now: datetime | None = None) -> str:
+        """Day between DayTimeStart and NightTimeStart (HA local time), else night.
+
+        If the window cannot be read, day is assumed.
+        """
+        day, night = self._start_hour(KEY_DAY_START), self._start_hour(KEY_NIGHT_START)
+        if day is None or night is None or day == night:
+            return PERIOD_DAY
+        hour = (now or dt_util.now()).hour
+        is_day = day <= hour < night if day < night else not night <= hour < day
+        return PERIOD_DAY if is_day else PERIOD_NIGHT
+
+    def active_column(self, now: datetime | None = None) -> str:
+        """_Day or _Night column, whichever Automic uses right now."""
+        return COL_DAY if self.active_period(now) == PERIOD_DAY else COL_NIGHT
+
+    @property
+    def summer(self) -> bool:
+        """IsSummer = Yes: Automic does not heat at all."""
+        return (self.data.day_night.value(KEY_SUMMER) or "").lower() in ("yes", "ja", "true", "1")
 
     def settings(self, schedule: str) -> Vara:
         return self.data.weekend if schedule == SCHEDULE_WEEKEND else self.data.weekday
