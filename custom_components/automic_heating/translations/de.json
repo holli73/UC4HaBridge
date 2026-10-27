@@ -1,0 +1,140 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Mit Automic verbinden",
+        "description": "Das Passwort wird nur einmal verwendet, um ein ablaufendes API-Token zu erstellen. Gespeichert wird nur das Token, es wird automatisch erneuert.",
+        "data": {
+          "url": "REST-URL",
+          "client": "Mandant",
+          "username": "Benutzer (USER/ABTEILUNG)",
+          "password": "Passwort",
+          "vara_summary": "Übersichts-VARA (Istwerte)",
+          "vara_weekday": "Einstellungs-VARA Mo-Fr",
+          "vara_weekend": "Einstellungs-VARA Sa-So",
+          "scan_interval": "Abfrageintervall (Sekunden)",
+          "trigger_object": "Trigger-Objekt nach Änderung (optional)",
+          "vara_day_night": "Tag/Nacht-VARA (Startstunden, Sommer)"
+        },
+        "data_description": {
+          "trigger_object": "Automic-Objekt, das direkt nach jeder Änderung aus HA aktiviert wird (ACTIVATE_UC_OBJECT), z. B. der Heizungs-Workflow. Leer lassen, um auf den normalen Zyklus zu warten.",
+          "vara_day_night": "Die Zeilen DayTimeStart und NightTimeStart (Stunde) wählen die Spalte _Day oder _Night; IsSummer = Yes schaltet die Heizung ab."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Automic erneut anmelden",
+        "description": "Das API-Token für {username} ist nicht mehr gültig. Passwort eingeben, um ein neues zu erstellen.",
+        "data": {
+          "password": "Passwort"
+        }
+      },
+      "reconfigure": {
+        "title": "Automic neu konfigurieren",
+        "description": "Verbindung oder VARA-Namen ändern. Das Passwort wird nur benötigt, wenn sich URL, Mandant oder Benutzer ändern (dann wird ein neues API-Token erstellt).",
+        "data": {
+          "url": "REST-URL",
+          "client": "Mandant",
+          "username": "Benutzer (USER/ABTEILUNG)",
+          "password": "Passwort (optional)",
+          "vara_summary": "Übersichts-VARA (Istwerte)",
+          "vara_weekday": "Einstellungs-VARA Mo-Fr",
+          "vara_weekend": "Einstellungs-VARA Sa-So",
+          "vara_day_night": "Tag/Nacht-VARA (Startstunden, Sommer)"
+        },
+        "data_description": {
+          "password": "Leer lassen, um das aktuelle API-Token zu behalten.",
+          "vara_day_night": "Die Zeilen DayTimeStart und NightTimeStart (Stunde) wählen die Spalte _Day oder _Night; IsSummer = Yes schaltet die Heizung ab."
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Anmeldung von Automic abgelehnt.",
+      "cannot_connect": "Automic-REST-API nicht erreichbar.",
+      "invalid_vara": "Eines der VARA-Objekte konnte nicht gelesen werden.",
+      "password_required": "URL, Mandant oder Benutzer geändert: Passwort eingeben, um ein neues API-Token zu erstellen.",
+      "trigger_not_found": "Das Trigger-Objekt existiert in diesem Mandanten nicht."
+    },
+    "abort": {
+      "already_configured": "Dieser Automic-Mandant bzw. diese VARA-Kombination ist bereits eingerichtet.",
+      "reauth_successful": "Erneute Anmeldung erfolgreich.",
+      "reconfigure_successful": "Neukonfiguration erfolgreich."
+    }
+  },
+  "entity": {
+    "climate": {
+      "room": {
+        "name": "Thermostat",
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "infra": "Infrarot",
+              "floor": "Fußboden",
+              "both": "Infrarot + Fußboden",
+              "manual": "Manuell"
+            }
+          }
+        }
+      }
+    },
+    "number": {
+      "weekday_day": {
+        "name": "Mo-Fr Tagestemperatur"
+      },
+      "weekday_night": {
+        "name": "Mo-Fr Nachttemperatur"
+      },
+      "weekend_day": {
+        "name": "Sa-So Tagestemperatur"
+      },
+      "weekend_night": {
+        "name": "Sa-So Nachttemperatur"
+      }
+    },
+    "select": {
+      "weekday_mode": {
+        "name": "Mo-Fr Heizmodus",
+        "state": {
+          "off": "Aus",
+          "infra": "Infrarot",
+          "floor": "Fußboden",
+          "both": "Infrarot + Fußboden",
+          "manual": "Manuell"
+        }
+      },
+      "weekend_mode": {
+        "name": "Sa-So Heizmodus",
+        "state": {
+          "off": "Aus",
+          "infra": "Infrarot",
+          "floor": "Fußboden",
+          "both": "Infrarot + Fußboden",
+          "manual": "Manuell"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Optionen Automic Heizung",
+        "data": {
+          "scan_interval": "Abfrageintervall (Sekunden)",
+          "trigger_object": "Trigger-Objekt nach Änderung (optional)"
+        },
+        "data_description": {
+          "scan_interval": "Wie oft die VARAs aus Automic gelesen werden (5-3600 s).",
+          "trigger_object": "Automic-Objekt, das direkt nach jeder Änderung aus HA aktiviert wird (ACTIVATE_UC_OBJECT), z. B. der Heizungs-Workflow. Leer lassen, um auf den normalen Zyklus zu warten."
+        }
+      }
+    },
+    "error": {
+      "trigger_not_found": "Das Trigger-Objekt existiert in diesem Mandanten nicht.",
+      "cannot_connect": "Automic-REST-API nicht erreichbar."
+    }
+  },
+  "exceptions": {
+    "summer": {
+      "message": "Sommerbetrieb ist in Automic aktiv (IsSummer = Yes): Heizung ist abgeschaltet."
+    }
+  }
+}

@@ -63,7 +63,17 @@
   "entity": {
     "climate": {
       "room": {
-        "name": "Thermostat"
+        "name": "Thermostat",
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "infra": "Infrared",
+              "floor": "Floor",
+              "both": "Infrared + floor",
+              "manual": "Manual"
+            }
+          }
+        }
       }
     },
     "number": {
