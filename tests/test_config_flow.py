@@ -65,6 +65,7 @@ async def test_reconfigure_keeps_token(hass, config_entry, mock_client) -> None:
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "reconfigure_successful"
     assert config_entry.data[CONF_TOKEN] == "tok-1"
+    assert config_entry.data["password"] == "pw"
     mock_client.create_token.assert_not_awaited()
 
 
@@ -75,11 +76,12 @@ async def test_reconfigure_url_change_needs_password(hass, config_entry, mock_cl
     assert result["errors"] == {"base": "password_required"}
 
     result = await hass.config_entries.flow.async_configure(
-        result["flow_id"], {**RECONFIGURE_INPUT, "url": "http://new:8088", "password": "pw"}
+        result["flow_id"], {**RECONFIGURE_INPUT, "url": "http://new:8088", "password": "pw2"}
     )
     assert result["reason"] == "reconfigure_successful"
     assert config_entry.data["url"] == "http://new:8088"
     assert config_entry.data[CONF_TOKEN] == "tok-2"
+    assert config_entry.data["password"] == "pw2"
     assert CONF_SCAN_INTERVAL in config_entry.data  # untouched keys survive
     mock_client.delete_token.assert_not_awaited()  # old token lives on the old server
 

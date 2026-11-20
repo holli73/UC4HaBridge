@@ -1,4 +1,4 @@
-"""Config flow. The password is only used to create an API token and is never stored."""
+"""Config flow. The password is stored so the integration can always log in again by itself."""
 
 from __future__ import annotations
 
@@ -127,6 +127,7 @@ class AutomicHeatingConfigFlow(ConfigFlow, domain=DOMAIN):
         if new_token is None:
             return {}, {}
         return {
+            CONF_PASSWORD: password,
             CONF_TOKEN: new_token.value,
             CONF_TOKEN_NAME: new_token.name,
             CONF_TOKEN_EXPIRES: new_token.expires.isoformat(),
@@ -189,7 +190,7 @@ class AutomicHeatingConfigFlow(ConfigFlow, domain=DOMAIN):
         entry = self._get_reconfigure_entry()
         errors: dict[str, str] = {}
         if user_input is not None:
-            password = user_input.pop(CONF_PASSWORD, None)
+            password = user_input.pop(CONF_PASSWORD, None) or None
             connection_changed = any(
                 user_input[key] != entry.data[key] for key in CONNECTION_KEYS
             )
@@ -221,7 +222,8 @@ class AutomicHeatingConfigFlow(ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="reconfigure",
             data_schema=self.add_suggested_values_to_schema(
-                RECONFIGURE_SCHEMA, user_input or entry.data
+                RECONFIGURE_SCHEMA,
+                {k: v for k, v in (user_input or entry.data).items() if k != CONF_PASSWORD},
             ),
             errors=errors,
         )

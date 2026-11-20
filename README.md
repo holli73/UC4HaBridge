@@ -11,7 +11,7 @@ change made in HA is written straight to Automic and then read back.
 | Automic → HA | Polls `GET /ae/api/v1/{client}/objects/{vara}` for the 4 VARAs (default every 15 s). Entities update only when a value actually changed. |
 | HA → Automic | Inline script via `POST /ae/api/v1/{client}/scripts`: `:PUT_VAR_COL <VARA>, "<room>", <col>, "<value>"`. No helper objects in Automic. The run is awaited (status 1900) and the VARAs are re-read right away. |
 | Immediate processing | Optional **trigger object**: the same script then runs `:SET &HA_RUNID# = ACTIVATE_UC_OBJECT(<object>, WAIT)`, so Automic processes the change at once instead of at the next cycle. Default: `HEATING.SCRI.MAIN.INFRARED.FLOOR` (clear the field under Configure to disable). If the activation fails, the script stops with `:STOP MSG` and HA shows an error (the value is still written). |
-| Auth | The password is entered once in the config flow and used to create an API token (90 days). Only the token is stored. Every 6 h the integration checks the expiry; 14 days before it, the current token creates its successor and the old one is deleted. If the token is rejected, HA asks you to sign in again. |
+| Auth | The password is entered once in the config flow and stored in the HA config entry (like other HA integrations), so no user ever has to sign in again. Requests use an API token (90 days). Every 6 h the integration checks the expiry; 14 days before it, a new token is created with the password and the old one is deleted. If Automic rejects the token earlier (expired, revoked, server reset), the integration logs in with the password and retries the request automatically. HA only asks for the password if Automic rejects the password itself. Use a dedicated Automic user with only the rights the bridge needs. |
 
 > AE 24.4 does not change any object counter or `modified_date` when `:PUT_VAR` writes, so change
 > detection compares the VARA contents on each poll (4 small GETs).
@@ -49,8 +49,8 @@ Settings → Devices & services → **Automic Heating**:
 | Menu | What you can change |
 |---|---|
 | **Configure** (gear) | Poll interval and trigger object (checked to exist; empty = no trigger). The integration reloads by itself after saving. |
-| ⋮ → **Reconfigure** | REST URL, client, user, VARA names (incl. the day/night VARA; existing entries use the default until saved). The password is only needed if URL, client or user change; a new API token is then created. If you leave it empty, the current token is kept. |
-| ⋮ → **Re-authenticate** | Shown automatically if the token is rejected. |
+| ⋮ → **Reconfigure** | REST URL, client, user, VARA names (incl. the day/night VARA; existing entries use the default until saved). The password is only needed if URL, client or user change; a new API token is then created and the stored password replaced. If you leave it empty, the stored password and current token are kept. |
+| ⋮ → **Re-authenticate** | Shown once after updating from a version that did not store the password, and otherwise only if Automic rejects the stored password (e.g. it was changed in Automic). |
 | Device → ⋮ → **Delete** | Only for rooms that no longer exist in the Mon-Fri settings VARA (their entities show as unavailable). |
 | ⋮ → **Reload** | Picks up **new rooms** added to the settings VARA in Automic. Rooms are read once at startup; values of existing rooms sync on every poll without a reload. |
 

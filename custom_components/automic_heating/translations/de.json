@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Mit Automic verbinden",
-        "description": "Das Passwort wird nur einmal verwendet, um ein ablaufendes API-Token zu erstellen. Gespeichert wird nur das Token, es wird automatisch erneuert.",
+        "description": "Das Passwort wird in Home Assistant gespeichert, damit die Integration ihr API-Token selbst erneuern kann, auch wenn es abgelaufen ist oder widerrufen wurde. Später ist kein Eingriff nötig.",
         "data": {
           "url": "REST-URL",
           "client": "Mandant",
@@ -23,14 +23,14 @@
       },
       "reauth_confirm": {
         "title": "Automic erneut anmelden",
-        "description": "Das API-Token für {username} ist nicht mehr gültig. Passwort eingeben, um ein neues zu erstellen.",
+        "description": "Passwort für {username} einmalig eingeben. Es wird gespeichert, damit das API-Token ab jetzt automatisch erneuert wird. Erneut nötig ist dieser Schritt nur, wenn das Passwort in Automic geändert wird.",
         "data": {
           "password": "Passwort"
         }
       },
       "reconfigure": {
         "title": "Automic neu konfigurieren",
-        "description": "Verbindung oder VARA-Namen ändern. Das Passwort wird nur benötigt, wenn sich URL, Mandant oder Benutzer ändern (dann wird ein neues API-Token erstellt).",
+        "description": "Verbindung oder VARA-Namen ändern. Das Passwort wird nur benötigt, wenn sich URL, Mandant oder Benutzer ändern; eine Eingabe ersetzt auch das gespeicherte Passwort.",
         "data": {
           "url": "REST-URL",
           "client": "Mandant",
@@ -42,7 +42,7 @@
           "vara_day_night": "Tag/Nacht-VARA (Startstunden, Sommer)"
         },
         "data_description": {
-          "password": "Leer lassen, um das aktuelle API-Token zu behalten.",
+          "password": "Leer lassen, um das gespeicherte Passwort und das aktuelle API-Token zu behalten.",
           "vara_day_night": "Die Zeilen DayTimeStart und NightTimeStart (Stunde) wählen die Spalte _Day oder _Night; IsSummer = Yes schaltet die Heizung ab."
         }
       }

@@ -13,12 +13,12 @@ import logging
 from datetime import datetime, timedelta
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
-from .api import AutomicAuthError, AutomicClient, AutomicError, format_number
+from .api import AutomicAuthError, AutomicClient, AutomicError, Token, format_number
 from .const import (
     CONF_SCAN_INTERVAL,
     CONF_TOKEN,
@@ -42,8 +42,6 @@ from .const import (
     PERIOD_NIGHT,
     SCHEDULE_WEEKDAY,
     SCHEDULE_WEEKEND,
-    TOKEN_LIFETIME,
-    TOKEN_PREFIX,
     TOKEN_RENEW_BEFORE,
 )
 from .models import HeatingData, Vara
@@ -77,6 +75,7 @@ class AutomicHeatingCoordinator(DataUpdateCoordinator[HeatingData]):
             "day_night": entry.data.get(CONF_VARA_DAY_NIGHT, DEFAULT_VARA_DAY_NIGHT),
         }
         self._write_lock = asyncio.Lock()
+        client.on_new_token = self._handle_new_token
 
     async def _async_update_data(self) -> HeatingData:
         try:
@@ -170,20 +169,10 @@ class AutomicHeatingCoordinator(DataUpdateCoordinator[HeatingData]):
 
     # ---- token renewal ---------------------------------------------------
 
-    async def async_renew_token_if_needed(self, *_: object) -> None:
-        """Create a successor token with the current one, then drop the old one."""
-        expires = dt_util.parse_datetime(self.config_entry.data[CONF_TOKEN_EXPIRES])
-        if expires and expires - dt_util.utcnow() > TOKEN_RENEW_BEFORE:
-            return
-        old_name = self.config_entry.data[CONF_TOKEN_NAME]
-        try:
-            token = await self.client.create_token(TOKEN_LIFETIME, TOKEN_PREFIX)
-        except AutomicAuthError:
-            self.config_entry.async_start_reauth(self.hass)
-            return
-        except AutomicError as err:
-            _LOGGER.warning("Token renewal failed, will retry: %s", err)
-            return
+    @callback
+    def _handle_new_token(self, token: Token) -> None:
+        """Persist a token the client just created and drop its predecessor."""
+        old_name = self.config_entry.data.get(CONF_TOKEN_NAME)
         self.hass.config_entries.async_update_entry(
             self.config_entry,
             data={
@@ -193,8 +182,26 @@ class AutomicHeatingCoordinator(DataUpdateCoordinator[HeatingData]):
                 CONF_TOKEN_EXPIRES: token.expires.isoformat(),
             },
         )
-        _LOGGER.info("Renewed Automic API token, valid until %s", token.expires)
+        _LOGGER.info("New Automic API token %s, valid until %s", token.name, token.expires)
+        if old_name and old_name != token.name:
+            self.config_entry.async_create_background_task(
+                self.hass, self._async_delete_token(old_name), "automic_delete_old_token"
+            )
+
+    async def _async_delete_token(self, name: str) -> None:
         try:
-            await self.client.delete_token(old_name)
+            await self.client.delete_token(name)
         except AutomicError as err:
-            _LOGGER.warning("Could not delete old token %s: %s", old_name, err)
+            _LOGGER.debug("Could not delete old token %s: %s", name, err)
+
+    async def async_renew_token_if_needed(self, *_: object) -> None:
+        """Replace the token before it expires (by password if stored)."""
+        expires = dt_util.parse_datetime(self.config_entry.data[CONF_TOKEN_EXPIRES])
+        if expires and expires - dt_util.utcnow() > TOKEN_RENEW_BEFORE:
+            return
+        try:
+            await self.client.renew_token()
+        except AutomicAuthError:
+            self.config_entry.async_start_reauth(self.hass)
+        except AutomicError as err:
+            _LOGGER.warning("Token renewal failed, will retry: %s", err)

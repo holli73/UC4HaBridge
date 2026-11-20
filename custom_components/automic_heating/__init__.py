@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_URL, CONF_USERNAME, Platform
+from homeassistant.const import CONF_PASSWORD, CONF_URL, CONF_USERNAME, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.device_registry import DeviceEntry
@@ -25,6 +25,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: AutomicConfigEntry) -> b
         entry.data[CONF_CLIENT],
         entry.data[CONF_USERNAME],
         entry.data[CONF_TOKEN],
+        entry.data.get(CONF_PASSWORD),
     )
     coordinator = AutomicHeatingCoordinator(hass, entry, client)
     await coordinator.async_renew_token_if_needed()
@@ -37,6 +38,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: AutomicConfigEntry) -> b
         )
     )
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    if not client.can_login:
+        # Entries from before the password was stored: ask once, so later
+        # token problems are fixed automatically instead of needing an admin.
+        entry.async_start_reauth(hass)
     return True
 
 

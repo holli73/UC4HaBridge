@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Connect to Automic",
-        "description": "The password is used once to create an expiring API token. Only the token is stored and it is renewed automatically.",
+        "description": "The password is stored in Home Assistant so the integration can renew its API token by itself, also after the token expired or was revoked. No user interaction is needed later.",
         "data": {
           "url": "REST URL",
           "client": "Client",
@@ -23,14 +23,14 @@
       },
       "reauth_confirm": {
         "title": "Re-authenticate Automic",
-        "description": "The API token for {username} is no longer valid. Enter the password to create a new one.",
+        "description": "Enter the password for {username} once. It is stored so the API token is renewed automatically from now on. This step is needed again only if the password is changed in Automic.",
         "data": {
           "password": "Password"
         }
       },
       "reconfigure": {
         "title": "Reconfigure Automic",
-        "description": "Change the connection or VARA names. The password is only needed when URL, client or user change (a new API token is created).",
+        "description": "Change the connection or VARA names. The password is only needed when URL, client or user change; entering it also replaces the stored password.",
         "data": {
           "url": "REST URL",
           "client": "Client",
@@ -42,7 +42,7 @@
           "vara_day_night": "Day/night VARA (start hours, summer)"
         },
         "data_description": {
-          "password": "Leave empty to keep the current API token.",
+          "password": "Leave empty to keep the stored password and the current API token.",
           "vara_day_night": "Rows DayTimeStart and NightTimeStart (hour) select the _Day or _Night column; IsSummer = Yes disables heating."
         }
       }

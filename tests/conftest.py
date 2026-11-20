@@ -54,6 +54,7 @@ def config_entry() -> MockConfigEntry:
             "url": "http://automic.example:8088",
             CONF_CLIENT: 1,
             "username": "HA/HEATING",
+            "password": "pw",
             CONF_VARA_SUMMARY: DEFAULT_VARA_SUMMARY,
             CONF_VARA_WEEKDAY: DEFAULT_VARA_WEEKDAY,
             CONF_VARA_WEEKEND: DEFAULT_VARA_WEEKEND,
@@ -80,4 +81,5 @@ def mock_client():
             return_value=Token("HA_BRIDGE_2", "tok-2", datetime(2099, 6, 1, tzinfo=timezone.utc))
         )
         client.delete_token = AsyncMock()
+        client.can_login = True
         yield client

@@ -9,12 +9,14 @@ from __future__ import annotations
 import asyncio
 import re
 from dataclasses import dataclass
+from collections.abc import Callable
 from datetime import datetime, timedelta, timezone
 from typing import Any
 from urllib.parse import quote
 
 import aiohttp
 
+from .const import TOKEN_LIFETIME, TOKEN_PREFIX
 from .models import Vara
 
 STATUS_ENDED_OK = 1900
@@ -49,20 +51,55 @@ class AutomicClient:
         client: int,
         user: str,
         token: str | None = None,
+        password: str | None = None,
     ) -> None:
         self._session = session
         self._base = f"{url.rstrip('/')}/ae/api/v1/{client}"
         self._client = client
         self._user = user
         self._token = token
+        self._password = password or None
+        self._login_lock = asyncio.Lock()
+        # Called with every token created by login()/renew_token(), to persist it.
+        self.on_new_token: Callable[[Token], None] | None = None
 
     @property
     def token(self) -> str | None:
         return self._token
 
+    @property
+    def can_login(self) -> bool:
+        """A stored password lets the client create tokens without user interaction."""
+        return self._password is not None
+
     # ---- low level -------------------------------------------------------
 
     async def _request(
+        self,
+        method: str,
+        path: str,
+        *,
+        json: Any = None,
+        auth: aiohttp.BasicAuth | None = None,
+        ok: tuple[int, ...] = (200,),
+    ) -> Any:
+        """Send a request; a rejected token is replaced via password login once."""
+        stale = self._token
+        try:
+            return await self._send(method, path, json=json, auth=auth, ok=ok)
+        except AutomicAuthError:
+            if auth is not None or not self.can_login:
+                raise
+        await self._login_if_stale(stale)
+        return await self._send(method, path, json=json, ok=ok)
+
+    async def _login_if_stale(self, stale: str | None) -> None:
+        """Log in unless a concurrent request already replaced the stale token."""
+        async with self._login_lock:
+            if self._token == stale:
+                await self.login()
+
+    async def _send(
         self,
         method: str,
         path: str,
@@ -127,6 +164,26 @@ class AutomicClient:
             raise AutomicError(f"Token creation returned no token: {data}")
         self._token = value
         return Token(name, value, expires)
+
+    async def login(self) -> Token:
+        """Create a fresh token with the stored password (basic auth)."""
+        if not self._password:
+            raise AutomicAuthError("No password stored")
+        token = await self.create_token(
+            TOKEN_LIFETIME, TOKEN_PREFIX, self._password
+        )
+        if self.on_new_token:
+            self.on_new_token(token)
+        return token
+
+    async def renew_token(self) -> Token:
+        """Replace the current token: by password if stored, else token by token."""
+        if self.can_login:
+            return await self.login()
+        token = await self.create_token(TOKEN_LIFETIME, TOKEN_PREFIX)
+        if self.on_new_token:
+            self.on_new_token(token)
+        return token
 
     async def delete_token(self, name: str) -> None:
         """Best effort: AE 24.4 deletes the token but may still answer 400."""
